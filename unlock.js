@@ -1,7 +1,7 @@
 (function () {
   const PASS_KEY = 'mce_all_access_unlocked';
   const DEBUG_KEY = 'mce_creator_debug';
-  const PASS_CHECKOUT_URL = 'https://YOUR-STORE.lemonsqueezy.com/buy/YOUR-PASS-ID?embed=1';
+  const PASS_CHECKOUT_URL = 'https://mycreativityexperiment.lemonsqueezy.com/checkout/buy/bca9462c-363e-4102-b434-ad7facee7551?embed=1';
 
   const params = new URLSearchParams(window.location.search);
   if (params.get('debug') === 'creator') {
