@@ -20,13 +20,13 @@
     "access": "free"
   },
   {
-    "slug": "pixel-bistro",
-    "title": "Pixel Bistro",
-    "section": "Games",
-    "language": null,
-    "subsection": null,
-    "description": "Fast-paced retro counter service arcade cartridge. Zero dependencies, plays offline.",
-    "path": "/content/games/pixel-bistro.html",
-    "access": "free"
-  }
+  "id": "pixel-bistro",
+  "title": "Pixel Bistro",
+  "category": "games",
+  "description": "Retro pixel-art kitchen management arcade game featuring multi-level restaurant stages, ingredient prep stations, and monster food critics.",
+  "path": "/content/games/pixel-bistro.html",
+  "access": "vault",
+  "badge": "HTML5 Arcade",
+  "offlineReady": true
+}
 ]
