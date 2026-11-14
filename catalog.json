@@ -10,16 +10,6 @@
     "access": "free"
   },
   {
-    "slug": "day-2",
-    "title": "Joyo Kanji Course: Day 2 - N5 Kanji 6-10",
-    "section": "Language Study",
-    "language": "Japanese",
-    "subsection": "Joyo Kanji Course",
-    "description": "Foundational Joyo kanji, vocabulary, grammar, and reading practice drills.",
-    "path": "/content/language-study/japanese/joyo-kanji/joyo_5_Day_2_offline.html",
-    "access": "free"
-  },
-  {
     "id": "Breath Meditation",
   "title": "Breath Meditation",
   "section": "Health",
@@ -29,6 +19,16 @@
   "badge": "HTML5 Arcade",
   "offlineReady": true
   },
+   {
+  "id": "Pixel Solar Explorer",
+  "title": "Pixel Solar Explorer",
+  "section": "Games",
+  "description": "Pixel space exploration sim. See the solar system in true PS1 glory!",
+  "path": "/content/games/pixelsolarsystem.html",
+  "access": "free",
+  "badge": "HTML5 Arcade",
+  "offlineReady": true
+},
   {
   "id": "pixel-bistro",
   "title": "Pixel Bistro",
@@ -38,5 +38,15 @@
   "access": "free",
   "badge": "HTML5 Arcade",
   "offlineReady": true
-}
+},
+  {
+    "slug": "day-2",
+    "title": "Joyo Kanji Course: Day 2 - N5 Kanji 6-10",
+    "section": "Language Study",
+    "language": "Japanese",
+    "subsection": "Joyo Kanji Course",
+    "description": "Foundational Joyo kanji, vocabulary, grammar, and reading practice drills.",
+    "path": "/content/language-study/japanese/joyo-kanji/joyo_5_Day_2_offline.html",
+    "access": "free"
+  }
 ]
