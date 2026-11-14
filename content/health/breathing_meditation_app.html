@@ -1,0 +1,1658 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Breathing Meditation App</title>
+    <style>
+        /* ==========================================================================
+           1. Offline CSS Reset & Utility System (Zero External Network Dependencies)
+           ========================================================================== */
+        *, ::before, ::after {
+            box-sizing: border-box;
+            border-width: 0;
+            border-style: solid;
+            border-color: #e5e7eb;
+            margin: 0;
+            padding: 0;
+        }
+
+        :root {
+            --bg-color: #f3f4f6;
+            --text-primary: #111827;
+            --text-secondary: #4b5563;
+            --text-muted: #6b7280;
+            --card-bg: #ffffff;
+            --card-border: #e5e7eb;
+            --circle-bg: #111827;
+            --circle-text: #ffffff;
+            --pulse-ring-color: rgba(17, 24, 39, 0.15);
+            --accent: #111827;
+            --accent-hover: #000000;
+        }
+
+        /* Black / White OLED Pure Contrast Theme */
+        body.theme-black {
+            --bg-color: #000000;
+            --text-primary: #ffffff;
+            --text-secondary: #d1d5db;
+            --text-muted: #9ca3af;
+            --card-bg: #0d0d0e;
+            --card-border: #27272a;
+            --circle-bg: #ffffff;
+            --circle-text: #000000;
+            --pulse-ring-color: rgba(255, 255, 255, 0.25);
+            --accent: #ffffff;
+            --accent-hover: #e5e7eb;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            line-height: 1.5;
+            -webkit-font-smoothing: antialiased;
+            overflow-x: hidden;
+            transition: background-color 0.4s ease, color 0.4s ease;
+            position: relative;
+        }
+
+        /* Utilities */
+        .hidden { display: none !important; }
+        .flex { display: flex; }
+        .flex-col { flex-direction: column; }
+        .items-center { align-items: center; }
+        .justify-center { justify-content: center; }
+        .justify-between { justify-content: space-between; }
+        .w-full { width: 100%; }
+        .h-full { height: 100%; }
+        .relative { position: relative; }
+        .absolute { position: absolute; }
+        .fixed { position: fixed; }
+        .inset-0 { top: 0; right: 0; bottom: 0; left: 0; }
+        .text-center { text-align: center; }
+        .font-mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; }
+        .font-semibold { font-weight: 600; }
+        .font-bold { font-weight: 700; }
+        .text-sm { font-size: 0.875rem; }
+        .text-base { font-size: 1rem; }
+        .text-lg { font-size: 1.125rem; }
+        .text-xl { font-size: 1.25rem; }
+        .text-2xl { font-size: 1.5rem; }
+        .text-3xl { font-size: 1.875rem; }
+        .text-4xl { font-size: 2.25rem; }
+        .text-5xl { font-size: 3rem; }
+        .text-6xl { font-size: 3.75rem; }
+
+        /* Container */
+        .container {
+            width: 100%;
+            max-width: 480px;
+            padding: 1.5rem;
+            margin: 0 auto;
+            position: relative;
+            z-index: 10;
+            transition: opacity 0.3s ease;
+        }
+
+        /* Cards and buttons */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            border-radius: 0.75rem;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            user-select: none;
+            text-align: center;
+            border: 1px solid transparent;
+        }
+
+        .btn-card {
+            width: 100%;
+            padding: 1.75rem 1.25rem;
+            background-color: var(--card-bg);
+            border: 1px solid var(--card-border);
+            color: var(--text-primary);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            flex-direction: column;
+            gap: 0.35rem;
+        }
+        .btn-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn-primary {
+            background-color: var(--accent);
+            color: var(--card-bg);
+            padding: 0.75rem 1.5rem;
+        }
+        body.theme-black .btn-primary {
+            background-color: #ffffff;
+            color: #000000;
+        }
+        .btn-primary:hover {
+            opacity: 0.92;
+            transform: translateY(-1px);
+        }
+        .btn-primary:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-secondary {
+            background-color: var(--card-bg);
+            border: 1px solid var(--card-border);
+            color: var(--text-primary);
+            padding: 0.5rem 1rem;
+            font-size: 0.9rem;
+        }
+        .btn-secondary:hover {
+            background-color: rgba(125, 125, 125, 0.1);
+        }
+
+        .btn-pill {
+            padding: 0.5rem 1rem;
+            background-color: var(--card-bg);
+            border: 1px solid var(--card-border);
+            color: var(--text-primary);
+            border-radius: 0.5rem;
+            font-size: 0.95rem;
+        }
+        .btn-pill.active {
+            background-color: var(--accent);
+            color: var(--card-bg);
+            border-color: var(--accent);
+            box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
+        }
+        body.theme-black .btn-pill.active {
+            background-color: #ffffff;
+            color: #000000;
+            border-color: #ffffff;
+        }
+
+        /* Toggle Switch UI */
+        .toggle-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.65rem 0.85rem;
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 0.75rem;
+            margin-top: 0.5rem;
+            cursor: pointer;
+            user-select: none;
+        }
+        .toggle-switch {
+            position: relative;
+            width: 44px;
+            height: 24px;
+            background-color: #d1d5db;
+            border-radius: 9999px;
+            transition: background-color 0.2s ease;
+            flex-shrink: 0;
+        }
+        .theme-black .toggle-switch {
+            background-color: #3f3f46;
+        }
+        .toggle-switch::after {
+            content: '';
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 20px;
+            height: 20px;
+            background: #ffffff;
+            border-radius: 50%;
+            transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+        }
+        .toggle-checkbox {
+            display: none;
+        }
+        .toggle-checkbox:checked + .toggle-switch {
+            background-color: #10b981;
+        }
+        .toggle-checkbox:checked + .toggle-switch::after {
+            transform: translateX(20px);
+        }
+
+        /* Sliders */
+        input[type=range] {
+            -webkit-appearance: none;
+            appearance: none;
+            background: transparent;
+            cursor: pointer;
+            width: 100%;
+        }
+        input[type=range]:focus { outline: none; }
+        input[type=range]::-webkit-slider-runnable-track {
+            background-color: var(--card-border);
+            border-radius: 0.5rem;
+            height: 0.45rem;
+        }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            margin-top: -5px;
+            background-color: var(--accent);
+            border-radius: 50%;
+            height: 1.1rem;
+            width: 1.1rem;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.3);
+        }
+        body.theme-black input[type=range]::-webkit-slider-thumb {
+            background-color: #ffffff;
+        }
+
+        /* ==========================================================================
+           2. Breathing Circle Architecture (Standard vs Immersive Fullscreen)
+           ========================================================================== */
+        #circle-stage {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            margin: 1.75rem auto;
+            width: 260px;
+            height: 260px;
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        #circle {
+            position: relative;
+            width: 130px;
+            height: 130px;
+            border-radius: 50%;
+            background-color: var(--circle-bg);
+            color: var(--circle-text);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transform: scale(0.35);
+            transition-property: transform;
+            transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+            z-index: 20;
+        }
+
+        body.theme-black #circle {
+            box-shadow: 0 0 50px rgba(255, 255, 255, 0.4);
+        }
+
+        /* ==========================================================================
+           3. Immersive Mode Styles (Centering circle, Fullscreen & Selective UI)
+           ========================================================================== */
+        body.is-immersive {
+            overflow: hidden;
+        }
+
+        body.is-immersive #circle-stage {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: min(85vw, 85vh);
+            height: min(85vw, 85vh);
+            max-width: 580px;
+            max-height: 580px;
+            margin: 0;
+            z-index: 50;
+        }
+
+        body.is-immersive #circle {
+            width: 48%;
+            height: 48%;
+            transform: scale(0.28);
+        }
+
+        /* In Relaxation Mode + Immersive: ALL visuals & timer vanish */
+        body.is-immersive.mode-relaxation #mode-title,
+        body.is-immersive.mode-relaxation #mode-subtitle,
+        body.is-immersive.mode-relaxation #instruction,
+        body.is-immersive.mode-relaxation #timer-display,
+        body.is-immersive.mode-relaxation #settings-container,
+        body.is-immersive.mode-relaxation #controls-container,
+        body.is-immersive.mode-relaxation #back-btn,
+        body.is-immersive.mode-relaxation #restart-session-btn {
+            display: none !important;
+        }
+
+        /* In Energy Mode + Immersive: Visuals disappear BUT Timer and Phase ALWAYS visible! */
+        body.is-immersive.mode-energy #mode-title,
+        body.is-immersive.mode-energy #mode-subtitle,
+        body.is-immersive.mode-energy #settings-container,
+        body.is-immersive.mode-energy #controls-container,
+        body.is-immersive.mode-energy #back-btn,
+        body.is-immersive.mode-energy #restart-session-btn {
+            display: none !important;
+        }
+
+        body.is-immersive.mode-energy #timer-display {
+            position: fixed;
+            top: 7%;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 60;
+            margin: 0;
+            font-size: 3.5rem;
+            letter-spacing: 0.05em;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.4);
+        }
+
+        body.is-immersive.mode-energy #instruction {
+            position: fixed;
+            bottom: 8%;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 60;
+            margin: 0;
+            font-size: 1.4rem;
+            white-space: nowrap;
+            letter-spacing: 0.03em;
+            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Floating Zen Overlay Bar (Fades out, Tap / Click anywhere to Reveal) */
+        #zen-floating-bar {
+            position: fixed;
+            top: 1.25rem;
+            right: 1.25rem;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            opacity: 0;
+            transition: opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            pointer-events: none;
+        }
+        body.is-immersive.show-zen-controls #zen-floating-bar {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .zen-tool-btn {
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            color: #ffffff;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 9999px;
+            padding: 0.5rem 0.85rem;
+            font-size: 0.8rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            transition: background 0.2s;
+        }
+        .zen-tool-btn:hover {
+            background: rgba(0, 0, 0, 0.85);
+        }
+
+        /* ==========================================================================
+           4. Modal & Completion Overlays
+           ========================================================================== */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(6px);
+            -webkit-backdrop-filter: blur(6px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 200;
+            padding: 1.5rem;
+            animation: fadeIn 0.3s ease;
+        }
+        .modal-card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            color: var(--text-primary);
+            border-radius: 1.25rem;
+            padding: 2rem;
+            max-width: 400px;
+            width: 100%;
+            text-align: center;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3);
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.96); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        /* Icon styling */
+        .icon {
+            width: 20px;
+            height: 20px;
+            stroke-width: 2;
+            stroke: currentColor;
+            fill: none;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Floating Zen Overlay Buttons (Available in Immersive Mode) -->
+    <div id="zen-floating-bar">
+        <button id="zen-theme-toggle-btn" class="zen-tool-btn" title="Toggle Pure Black / Slate Theme">
+            <svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+            <span id="zen-theme-label">Black Mode</span>
+        </button>
+        <button id="zen-size-btn" class="zen-tool-btn" title="Cycle Circle Size">
+            <svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/></svg>
+            <span id="zen-size-label">100%</span>
+        </button>
+        <button id="zen-stop-btn" class="zen-tool-btn" title="Pause / Stop Session">
+            <svg class="icon" viewBox="0 0 24 24"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+            <span>Stop</span>
+        </button>
+        <button id="zen-exit-btn" class="zen-tool-btn" title="Exit Immersive Fullscreen">
+            <svg class="icon" viewBox="0 0 24 24"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
+            <span>Exit Zen</span>
+        </button>
+    </div>
+
+    <!-- Main Container -->
+    <div class="container text-center">
+
+        <!-- 1. MAIN MENU -->
+        <div id="main-menu">
+            <h1 class="text-3xl font-bold mb-2">Mindful Breath</h1>
+            <p style="color: var(--text-muted); margin-bottom: 2rem;">Choose your breathing experience</p>
+            
+            <div style="display: flex; flex-direction: column; gap: 1rem;">
+                <button id="show-relaxation-btn" class="btn btn-card">
+                    <span class="text-2xl font-bold">Relaxation</span>
+                    <span style="color: var(--text-muted);" class="text-sm">Calm, steady rhythmic breathing</span>
+                </button>
+                <button id="show-energy-btn" class="btn btn-card">
+                    <span class="text-2xl font-bold">Energy & Focus</span>
+                    <span style="color: var(--text-muted);" class="text-sm">Hyper-oxygenation with prolonged breath retention</span>
+                </button>
+            </div>
+
+            <!-- Global Quick Theme Selector on Main Menu -->
+            <div style="margin-top: 2rem;">
+                <label class="toggle-row">
+                    <span class="font-semibold text-sm">Pure Black & White Theme (OLED Zen)</span>
+                    <input type="checkbox" id="global-black-toggle" class="toggle-checkbox">
+                    <span class="toggle-switch"></span>
+                </label>
+            </div>
+        </div>
+
+        <!-- 2. ENERGY SELECTION MENU -->
+        <div id="energy-menu" class="hidden">
+            <h1 class="text-3xl font-bold mb-2">Select Level</h1>
+            <p style="color: var(--text-muted); margin-bottom: 2rem;">Rhythmic breathwork &amp; retention cycles</p>
+            
+            <div style="display: flex; flex-direction: column; gap: 1rem;">
+                <button data-level="1" class="energy-level-btn btn btn-card">
+                    <span class="text-xl font-bold">Level 1 (Beginner)</span>
+                    <span style="color: var(--text-muted);" class="text-sm">15 breaths (~1 min) &bull; 1:00 min retention</span>
+                </button>
+                <button data-level="2" class="energy-level-btn btn btn-card">
+                    <span class="text-xl font-bold">Level 2 (Intermediate)</span>
+                    <span style="color: var(--text-muted);" class="text-sm">30 breaths (~2 min) &bull; 1:30 min retention</span>
+                </button>
+                <button data-level="3" class="energy-level-btn btn btn-card">
+                    <span class="text-xl font-bold">Level 3 (Advanced)</span>
+                    <span style="color: var(--text-muted);" class="text-sm">38 breaths (~2.5 min) &bull; 2:00 min retention</span>
+                </button>
+                <button data-level="custom" id="energy-custom-btn" class="energy-level-btn btn btn-card">
+                    <span class="text-xl font-bold">Custom</span>
+                    <span style="color: var(--text-muted);" class="text-sm">Customize breathing &amp; retention times</span>
+                </button>
+            </div>
+            
+            <button id="back-to-main-menu-btn" class="btn btn-secondary" style="margin-top: 2rem;">
+                Back to Main Menu
+            </button>
+        </div>
+
+        <!-- 3. ACTIVE BREATHING APP SCREEN -->
+        <div id="breathing-app" class="hidden">
+            <!-- Header bar with Back and Main Menu Restart -->
+            <div class="flex items-center justify-between w-full" style="margin-bottom: 1rem;">
+                <button id="back-btn" class="btn btn-secondary" style="padding: 0.4rem 0.8rem; font-size: 0.85rem;">
+                    &larr; Back
+                </button>
+                <button id="restart-session-btn" class="btn btn-secondary" style="padding: 0.4rem 0.8rem; font-size: 0.85rem;" title="Reset session and return to main menu">
+                    Main Menu
+                </button>
+            </div>
+            
+            <h1 id="mode-title" class="text-3xl font-bold mb-1"></h1>
+            <p id="mode-subtitle" class="text-sm" style="color: var(--text-muted); margin-bottom: 0.75rem;"></p>
+            
+            <p id="instruction" class="text-xl font-semibold" style="min-height: 2rem; color: var(--text-secondary);"></p>
+
+            <!-- Dynamic Breathing Circle Stage (Clean High Contrast) -->
+            <div id="circle-stage">
+                <div id="circle">
+                    <span id="circle-text" class="text-2xl font-bold font-mono"></span>
+                </div>
+            </div>
+
+            <!-- Timer Display -->
+            <div id="timer-display" class="text-5xl font-mono font-bold" style="margin-bottom: 1.25rem;">00:00</div>
+
+            <!-- Settings Panel -->
+            <div id="settings-container">
+                <!-- Relaxation Mode Specific Settings -->
+                <div id="relaxation-settings" class="hidden" style="margin-bottom: 1.5rem;">
+                    <p class="font-semibold text-sm" style="margin-bottom: 0.6rem; color: var(--text-secondary);">Select Session Duration (minutes):</p>
+                    <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 0.5rem; margin-bottom: 1rem;">
+                        <button data-duration="1" class="duration-btn btn btn-pill">1</button>
+                        <button data-duration="3" class="duration-btn btn btn-pill">3</button>
+                        <button data-duration="5" class="duration-btn btn btn-pill">5</button>
+                        <button data-duration="10" class="duration-btn btn btn-pill">10</button>
+                        <button data-duration="20" class="duration-btn btn btn-pill">20</button>
+                        <button data-duration="30" class="duration-btn btn btn-pill">30</button>
+                    </div>
+
+                    <!-- Custom Rhythm Sliders -->
+                    <div style="background: var(--card-bg); border: 1px solid var(--card-border); padding: 1rem; border-radius: 0.75rem; display: flex; flex-direction: column; gap: 0.85rem;">
+                        <p class="font-semibold text-xs" style="color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em;">Customize Breathing Rhythm</p>
+                        
+                        <div class="flex items-center justify-between gap-3">
+                            <span class="text-sm font-semibold" style="width: 60px; text-align: left;">Inhale</span>
+                            <input id="inhale-slider" type="range" min="2" max="10" step="0.5" value="6">
+                            <span id="inhale-value" class="font-mono text-sm" style="width: 45px; text-align: right;">6.0s</span>
+                        </div>
+                        <div class="flex items-center justify-between gap-3">
+                            <span class="text-sm font-semibold" style="width: 60px; text-align: left;">Hold</span>
+                            <input id="pause-slider" type="range" min="0" max="10" step="0.5" value="1.5">
+                            <span id="pause-value" class="font-mono text-sm" style="width: 45px; text-align: right;">1.5s</span>
+                        </div>
+                        <div class="flex items-center justify-between gap-3">
+                            <span class="text-sm font-semibold" style="width: 60px; text-align: left;">Exhale</span>
+                            <input id="exhale-slider" type="range" min="2" max="10" step="0.5" value="6">
+                            <span id="exhale-value" class="font-mono text-sm" style="width: 45px; text-align: right;">6.0s</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Custom Energy Settings -->
+                <div id="energy-custom-settings" class="hidden" style="margin-bottom: 1.5rem; background: var(--card-bg); border: 1px solid var(--card-border); padding: 1rem; border-radius: 0.75rem; text-align: left;">
+                    <p class="font-semibold text-xs" style="color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.75rem;">Custom Energy Rhythm</p>
+                    
+                    <div style="margin-bottom: 0.85rem;">
+                        <div class="flex items-center justify-between" style="margin-bottom: 0.35rem;">
+                            <span class="text-sm font-semibold">Breathing Duration</span>
+                            <span id="custom-breath-time-val-app" class="font-mono text-sm font-bold">1:30 min <span style="font-weight: normal; font-size: 0.8rem; color: var(--text-muted);">(~22 breaths)</span></span>
+                        </div>
+                        <input id="custom-breath-slider-app" type="range" min="30" max="300" step="15" value="90">
+                    </div>
+
+                    <div>
+                        <div class="flex items-center justify-between" style="margin-bottom: 0.35rem;">
+                            <span class="text-sm font-semibold">Retention Hold Time</span>
+                            <span id="custom-hold-time-val-app" class="font-mono text-sm font-bold">1:15 min</span>
+                        </div>
+                        <input id="custom-hold-slider-app" type="range" min="15" max="300" step="15" value="75">
+                    </div>
+                </div>
+
+                <!-- Immersion & Visual Appearance Toggles -->
+                <div style="display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 1.25rem;">
+                    <!-- Circle Size Customization -->
+                    <div style="background: var(--card-bg); border: 1px solid var(--card-border); padding: 0.85rem 1rem; border-radius: 0.75rem; text-align: left;">
+                        <div class="flex items-center justify-between" style="margin-bottom: 0.5rem;">
+                            <div>
+                                <p class="font-semibold text-sm">Breathing Circle Size</p>
+                                <p class="text-xs" style="color: var(--text-muted);">Adjust diameter and breath range</p>
+                            </div>
+                            <span id="circle-size-value" class="font-mono text-sm font-bold" style="background: rgba(125, 125, 125, 0.12); padding: 0.15rem 0.5rem; border-radius: 0.35rem;">100%</span>
+                        </div>
+                        <div class="flex items-center gap-3" style="margin-bottom: 0.6rem;">
+                            <span class="text-xs font-mono" style="color: var(--text-muted); width: 32px;">50%</span>
+                            <input id="circle-size-slider" type="range" min="0.5" max="1.5" step="0.05" value="1.0">
+                            <span class="text-xs font-mono" style="color: var(--text-muted); width: 32px; text-align: right;">150%</span>
+                        </div>
+                        <div class="flex justify-between gap-1">
+                            <button type="button" data-size="0.75" class="size-preset-btn btn btn-pill" style="flex: 1; padding: 0.25rem 0.4rem; font-size: 0.75rem;">Small</button>
+                            <button type="button" data-size="1.0" class="size-preset-btn btn btn-pill active" style="flex: 1; padding: 0.25rem 0.4rem; font-size: 0.75rem;">Medium</button>
+                            <button type="button" data-size="1.25" class="size-preset-btn btn btn-pill" style="flex: 1; padding: 0.25rem 0.4rem; font-size: 0.75rem;">Large</button>
+                            <button type="button" data-size="1.5" class="size-preset-btn btn btn-pill" style="flex: 1; padding: 0.25rem 0.4rem; font-size: 0.75rem;">Max</button>
+                        </div>
+                    </div>
+
+                    <!-- Immersive View Toggle -->
+                    <label class="toggle-row" title="Hides interface elements for pure centered meditation">
+                        <div style="text-align: left;">
+                            <p class="font-semibold text-sm">Zen Immersive Fullscreen</p>
+                            <p id="immersive-hint" class="text-xs" style="color: var(--text-muted);">
+                                Centered circle &bull; All UI hides
+                            </p>
+                        </div>
+                        <input type="checkbox" id="immersive-toggle" class="toggle-checkbox">
+                        <span class="toggle-switch"></span>
+                    </label>
+
+                    <!-- Pitch Black & White Circle Screen Toggle -->
+                    <label class="toggle-row" title="Pure black background with expanding white circle">
+                        <div style="text-align: left;">
+                            <p class="font-semibold text-sm">Pure Black OLED Screen</p>
+                            <p class="text-xs" style="color: var(--text-muted);">Solid black & expanding white circle</p>
+                        </div>
+                        <input type="checkbox" id="black-theme-toggle" class="toggle-checkbox">
+                        <span class="toggle-switch"></span>
+                    </label>
+                </div>
+            </div>
+            
+            <!-- Controls Container -->
+            <div id="controls-container" class="flex flex-col items-center gap-3">
+                <button id="start-stop-btn" class="btn btn-primary" style="width: 12rem; font-size: 1.1rem; padding: 0.85rem 1.5rem; border-radius: 9999px;">
+                    Start
+                </button>
+                
+                <!-- White Noise Offline Audio Generator -->
+                <div class="flex items-center justify-center gap-2" style="margin-top: 0.5rem;">
+                    <span class="text-xs" style="color: var(--text-muted);">Ambient White Noise:</span>
+                    <button id="noise-btn" class="btn btn-secondary" style="border-radius: 50%; width: 36px; height: 36px; padding: 0;">
+                        <svg id="sound-off-icon" class="icon" viewBox="0 0 24 24"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="22" y1="9" x2="16" y2="15"/><line x1="16" y1="9" x2="22" y2="15"/></svg>
+                        <svg id="sound-on-icon" class="icon hidden" viewBox="0 0 24 24"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>
+                    </button>
+                    <div id="volume-container" class="hidden" style="width: 90px; margin-left: 0.25rem;">
+                        <input id="volume-slider" type="range" min="0" max="0.1" step="0.005" value="0.04" title="Noise Volume">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- 4. SESSION COMPLETION MODAL -->
+    <div id="completion-modal" class="modal-overlay hidden">
+        <div class="modal-card">
+            <div style="width: 56px; height: 56px; border-radius: 50%; background: rgba(16, 185, 129, 0.15); color: #10b981; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.25rem auto;">
+                <svg style="width: 32px; height: 32px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+            </div>
+            <h2 class="text-2xl font-bold mb-1">Session Complete</h2>
+            <p id="completion-summary" style="color: var(--text-muted); margin-bottom: 1.75rem;" class="text-sm">
+                Take a moment to notice how clear and relaxed your body feels.
+            </p>
+            <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+                <button id="modal-restart-main-btn" class="btn btn-primary" style="width: 100%; border-radius: 0.75rem; padding: 0.85rem;">
+                    Return to Main Menu
+                </button>
+                <button id="modal-repeat-btn" class="btn btn-secondary" style="width: 100%; border-radius: 0.75rem; padding: 0.85rem;">
+                    Repeat Session
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        /* ==========================================================================
+           Offline Meditation Engine & State Management
+           ========================================================================== */
+        // DOM Elements
+        const mainMenu = document.getElementById('main-menu');
+        const energyMenu = document.getElementById('energy-menu');
+        const breathingApp = document.getElementById('breathing-app');
+        const completionModal = document.getElementById('completion-modal');
+        const completionSummary = document.getElementById('completion-summary');
+
+        const showRelaxationBtn = document.getElementById('show-relaxation-btn');
+        const showEnergyBtn = document.getElementById('show-energy-btn');
+        const backToMainMenuBtn = document.getElementById('back-to-main-menu-btn');
+        const energyLevelBtns = document.querySelectorAll('.energy-level-btn');
+        const energyCustomBtn = document.getElementById('energy-custom-btn');
+        const energyCustomSettings = document.getElementById('energy-custom-settings');
+
+        // Custom Energy Sliders (App Settings Screen)
+        const customBreathSliderApp = document.getElementById('custom-breath-slider-app');
+        const customBreathTimeValApp = document.getElementById('custom-breath-time-val-app');
+        const customHoldSliderApp = document.getElementById('custom-hold-slider-app');
+        const customHoldTimeValApp = document.getElementById('custom-hold-time-val-app');
+
+        const backBtn = document.getElementById('back-btn');
+        const restartSessionBtn = document.getElementById('restart-session-btn');
+        const modalRestartMainBtn = document.getElementById('modal-restart-main-btn');
+        const modalRepeatBtn = document.getElementById('modal-repeat-btn');
+
+        const modeTitle = document.getElementById('mode-title');
+        const modeSubtitle = document.getElementById('mode-subtitle');
+        const instruction = document.getElementById('instruction');
+        const circleStage = document.getElementById('circle-stage');
+        const circle = document.getElementById('circle');
+        const circleText = document.getElementById('circle-text');
+        const timerDisplay = document.getElementById('timer-display');
+        
+        const settingsContainer = document.getElementById('settings-container');
+        const relaxationSettings = document.getElementById('relaxation-settings');
+        const durationButtons = document.querySelectorAll('.duration-btn');
+        const startStopBtn = document.getElementById('start-stop-btn');
+        
+        // Toggles & Appearance
+        const immersiveToggle = document.getElementById('immersive-toggle');
+        const immersiveHint = document.getElementById('immersive-hint');
+        const blackThemeToggle = document.getElementById('black-theme-toggle');
+        const globalBlackToggle = document.getElementById('global-black-toggle');
+        const zenFloatingBar = document.getElementById('zen-floating-bar');
+        const zenThemeToggleBtn = document.getElementById('zen-theme-toggle-btn');
+        const zenThemeLabel = document.getElementById('zen-theme-label');
+        const zenSizeBtn = document.getElementById('zen-size-btn');
+        const zenSizeLabel = document.getElementById('zen-size-label');
+        const zenStopBtn = document.getElementById('zen-stop-btn');
+        const zenExitBtn = document.getElementById('zen-exit-btn');
+
+        // Circle size controls
+        const circleSizeSlider = document.getElementById('circle-size-slider');
+        const circleSizeValue = document.getElementById('circle-size-value');
+        const sizePresetBtns = document.querySelectorAll('.size-preset-btn');
+
+        // Timing sliders
+        const inhaleSlider = document.getElementById('inhale-slider');
+        const pauseSlider = document.getElementById('pause-slider');
+        const exhaleSlider = document.getElementById('exhale-slider');
+        const inhaleValue = document.getElementById('inhale-value');
+        const pauseValue = document.getElementById('pause-value');
+        const exhaleValue = document.getElementById('exhale-value');
+
+        // Audio controls
+        const noiseBtn = document.getElementById('noise-btn');
+        const soundOffIcon = document.getElementById('sound-off-icon');
+        const soundOnIcon = document.getElementById('sound-on-icon');
+        const volumeContainer = document.getElementById('volume-container');
+        const volumeSlider = document.getElementById('volume-slider');
+
+        // State
+        let currentMode = null; // 'relaxation' | 'energy'
+        let isActive = false;
+        let countdownInterval = null;
+        let mainInterval = null;
+        let breathingTimeoutId = null;
+        let selectedDuration = 0; // minutes
+        let remainingTime = 0; // seconds
+        let isImmersivePreferred = false;
+        let isBlackTheme = false;
+        let circleSizeMultiplier = 1.0;
+
+        let relaxationTimings = {
+            inhale: 6.0,
+            pause: 1.5,
+            exhale: 6.0,
+            postExhalePause: 0.8
+        };
+
+        const energyLevels = {
+            1: { breathing: 60, breaths: 15, hold: 60 },
+            2: { breathing: 120, breaths: 30, hold: 90 },
+            3: { breathing: 150, breaths: 38, hold: 120 }
+        };
+
+        let customEnergy = {
+            breathing: 90, // seconds (1:30)
+            hold: 75       // seconds (1:15)
+        };
+
+        let energyState = {
+            level: 1,
+            round: 1,
+            phase: 'idle', // 'breathing', 'final_breath', 'hold_exhale', 'hold_inhale'
+            breathCount: 0,
+            timer: 0
+        };
+
+        // Web Audio synthesized offline white noise and chimes
+        let audioContext = null;
+        let noiseSource = null;
+        let gainNode = null;
+        let isNoisePlaying = false;
+        let isNoiseEnabled = false;
+
+        /* ==========================================================================
+           Navigation & Reset Handlers
+           ========================================================================== */
+        showRelaxationBtn.addEventListener('click', () => setupMode('relaxation'));
+        
+        showEnergyBtn.addEventListener('click', () => {
+            mainMenu.classList.add('hidden');
+            energyMenu.classList.remove('hidden');
+        });
+
+        backToMainMenuBtn.addEventListener('click', returnToMainMenu);
+        
+        energyLevelBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                if (btn.dataset.level === 'custom') {
+                    energyState.level = 'custom';
+                } else {
+                    energyState.level = parseInt(btn.dataset.level, 10);
+                }
+                energyMenu.classList.add('hidden');
+                setupMode('energy');
+            });
+        });
+
+        backBtn.addEventListener('click', () => {
+            stopSession(false);
+            breathingApp.classList.add('hidden');
+            if (currentMode === 'energy') {
+                energyMenu.classList.remove('hidden');
+            } else {
+                mainMenu.classList.remove('hidden');
+            }
+            currentMode = null;
+        });
+
+        restartSessionBtn.addEventListener('click', returnToMainMenu);
+        modalRestartMainBtn.addEventListener('click', () => {
+            completionModal.classList.add('hidden');
+            returnToMainMenu();
+        });
+
+        modalRepeatBtn.addEventListener('click', () => {
+            completionModal.classList.add('hidden');
+            if (currentMode) {
+                setupMode(currentMode);
+            } else {
+                returnToMainMenu();
+            }
+        });
+
+        function returnToMainMenu() {
+            stopSession(false);
+            stopWhiteNoiseAudio();
+            completionModal.classList.add('hidden');
+            energyMenu.classList.add('hidden');
+            breathingApp.classList.add('hidden');
+            mainMenu.classList.remove('hidden');
+            
+            // Full state reset
+            currentMode = null;
+            selectedDuration = 0;
+            remainingTime = 0;
+            energyState = { level: 1, round: 1, phase: 'idle', breathCount: 0, timer: 0 };
+            updateTimerDisplay(0);
+            resetAnimation();
+            exitImmersiveView();
+            durationButtons.forEach(btn => {
+                btn.classList.remove('active');
+            });
+        }
+
+        /* ==========================================================================
+           Mode Setup
+           ========================================================================== */
+        function setupMode(mode) {
+            currentMode = mode;
+            mainMenu.classList.add('hidden');
+            energyMenu.classList.add('hidden');
+            breathingApp.classList.remove('hidden');
+            
+            // Set mode classes on body for CSS targeting
+            document.body.classList.remove('mode-relaxation', 'mode-energy');
+            document.body.classList.add(`mode-${mode}`);
+
+            instruction.textContent = 'Press Start to begin';
+            circleText.textContent = '';
+            timerDisplay.textContent = '00:00';
+            startStopBtn.textContent = 'Start';
+            settingsContainer.style.display = 'block';
+            resetAnimation();
+
+            if (mode === 'relaxation') {
+                modeTitle.textContent = 'Relaxation';
+                modeSubtitle.textContent = 'Calm & Steady Diaphragmatic Breath';
+                relaxationSettings.classList.remove('hidden');
+                energyCustomSettings.classList.add('hidden');
+                immersiveHint.textContent = 'Breathing circle takes full screen & all UI/timers hide';
+                
+                // Require selecting duration or preserve previously selected
+                if (!selectedDuration) {
+                    startStopBtn.disabled = true;
+                    instruction.textContent = 'Select a duration to begin';
+                } else {
+                    startStopBtn.disabled = false;
+                    instruction.textContent = `Ready for ${selectedDuration} min session`;
+                }
+                updateRelaxationSliderDisplay();
+            } else if (mode === 'energy') {
+                modeTitle.textContent = 'Energy & Focus';
+                if (energyState.level === 'custom') {
+                    modeSubtitle.textContent = 'Custom';
+                    energyCustomSettings.classList.remove('hidden');
+                } else {
+                    modeSubtitle.textContent = `Level ${energyState.level}`;
+                    energyCustomSettings.classList.add('hidden');
+                }
+                relaxationSettings.classList.add('hidden');
+                immersiveHint.textContent = 'Full screen circle &bull; Timer remains visible';
+                startStopBtn.disabled = false;
+                instruction.textContent = 'Press Start when you are seated comfortably';
+            }
+        }
+
+        /* ==========================================================================
+           Custom Energy Timing Controls
+           ========================================================================== */
+        function formatMinutesSeconds(totalSec) {
+            const m = Math.floor(totalSec / 60);
+            const s = totalSec % 60;
+            return `${m}:${s < 10 ? '0' : ''}${s}`;
+        }
+
+        function updateCustomEnergySliders(breathingSec, holdSec) {
+            if (breathingSec !== undefined) customEnergy.breathing = parseInt(breathingSec, 10);
+            if (holdSec !== undefined) customEnergy.hold = parseInt(holdSec, 10);
+
+            const breaths = Math.max(5, Math.round(customEnergy.breathing / 4));
+            const breathText = `${formatMinutesSeconds(customEnergy.breathing)} min <span style="font-weight: normal; font-size: 0.8rem; color: var(--text-muted);">(~${breaths} breaths)</span>`;
+            const holdText = `${formatMinutesSeconds(customEnergy.hold)} min`;
+
+            if (customBreathTimeValApp) customBreathTimeValApp.innerHTML = breathText;
+            if (customHoldTimeValApp) customHoldTimeValApp.textContent = holdText;
+
+            if (customBreathSliderApp) customBreathSliderApp.value = customEnergy.breathing;
+            if (customHoldSliderApp) customHoldSliderApp.value = customEnergy.hold;
+
+            if (currentMode === 'energy' && energyState.level === 'custom') {
+                modeSubtitle.textContent = 'Custom';
+            }
+        }
+
+        customBreathSliderApp.addEventListener('input', (e) => updateCustomEnergySliders(e.target.value, undefined));
+        customHoldSliderApp.addEventListener('input', (e) => updateCustomEnergySliders(undefined, e.target.value));
+
+        function getEnergyLevelConfig() {
+            if (energyState.level === 'custom') {
+                const breaths = Math.max(5, Math.round(customEnergy.breathing / 4));
+                return {
+                    breathing: customEnergy.breathing,
+                    breaths: breaths,
+                    hold: customEnergy.hold
+                };
+            }
+            return energyLevels[energyState.level] || energyLevels[1];
+        }
+
+        /* ==========================================================================
+           Duration & Timing Sliders
+           ========================================================================== */
+        durationButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                if (isActive) return;
+                selectedDuration = parseInt(button.dataset.duration, 10);
+                remainingTime = selectedDuration * 60;
+                updateTimerDisplay(remainingTime);
+                startStopBtn.disabled = false;
+                
+                durationButtons.forEach(btn => btn.classList.remove('active'));
+                button.classList.add('active');
+                instruction.textContent = `Ready for a ${selectedDuration} min session`;
+            });
+        });
+
+        inhaleSlider.addEventListener('input', handleSliderChange);
+        pauseSlider.addEventListener('input', handleSliderChange);
+        exhaleSlider.addEventListener('input', handleSliderChange);
+
+        function handleSliderChange(e) {
+            const { id, value } = e.target;
+            const numericValue = parseFloat(value);
+            if (id === 'inhale-slider') relaxationTimings.inhale = numericValue;
+            if (id === 'pause-slider') relaxationTimings.pause = numericValue;
+            if (id === 'exhale-slider') relaxationTimings.exhale = numericValue;
+            updateRelaxationSliderDisplay();
+        }
+
+        function updateRelaxationSliderDisplay() {
+            inhaleValue.textContent = `${relaxationTimings.inhale.toFixed(1)}s`;
+            pauseValue.textContent = `${relaxationTimings.pause.toFixed(1)}s`;
+            exhaleValue.textContent = `${relaxationTimings.exhale.toFixed(1)}s`;
+        }
+
+        /* ==========================================================================
+           Immersive Fullscreen & Pure Black Theme Management
+           ========================================================================== */
+        immersiveToggle.addEventListener('change', (e) => {
+            isImmersivePreferred = e.target.checked;
+            if (isActive) {
+                if (isImmersivePreferred) enterImmersiveView();
+                else exitImmersiveView();
+            }
+        });
+
+        function syncBlackTheme(enabled) {
+            isBlackTheme = enabled;
+            if (enabled) {
+                document.body.classList.add('theme-black');
+                blackThemeToggle.checked = true;
+                globalBlackToggle.checked = true;
+                zenThemeLabel.textContent = 'Slate Mode';
+            } else {
+                document.body.classList.remove('theme-black');
+                blackThemeToggle.checked = false;
+                globalBlackToggle.checked = false;
+                zenThemeLabel.textContent = 'Black Mode';
+            }
+        }
+
+        blackThemeToggle.addEventListener('change', (e) => syncBlackTheme(e.target.checked));
+        globalBlackToggle.addEventListener('change', (e) => syncBlackTheme(e.target.checked));
+        
+        zenThemeToggleBtn.addEventListener('click', () => {
+            syncBlackTheme(!isBlackTheme);
+        });
+
+        /* ==========================================================================
+           Circle Size Controller
+           ========================================================================== */
+        function setCircleSize(val) {
+            circleSizeMultiplier = parseFloat(val);
+            if (circleSizeSlider) circleSizeSlider.value = circleSizeMultiplier;
+            const pct = Math.round(circleSizeMultiplier * 100);
+            if (circleSizeValue) circleSizeValue.textContent = `${pct}%`;
+            if (zenSizeLabel) zenSizeLabel.textContent = `${pct}%`;
+
+            sizePresetBtns.forEach(btn => {
+                const btnVal = parseFloat(btn.dataset.size);
+                if (Math.abs(btnVal - circleSizeMultiplier) < 0.04) {
+                    btn.classList.add('active');
+                } else {
+                    btn.classList.remove('active');
+                }
+            });
+
+            if (!isActive) {
+                circle.style.transform = getExhaleScale();
+            }
+        }
+
+        circleSizeSlider.addEventListener('input', (e) => {
+            setCircleSize(e.target.value);
+        });
+
+        sizePresetBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                setCircleSize(btn.dataset.size);
+            });
+        });
+
+        if (zenSizeBtn) {
+            zenSizeBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const presets = [0.75, 1.0, 1.25, 1.5];
+                let nextIdx = presets.findIndex(p => Math.abs(p - circleSizeMultiplier) < 0.05) + 1;
+                if (nextIdx >= presets.length || nextIdx === 0) nextIdx = 0;
+                setCircleSize(presets[nextIdx]);
+            });
+        }
+
+        function enterImmersiveView() {
+            document.body.classList.add('is-immersive');
+            // Fade out the floating menu when entering session
+            document.body.classList.remove('show-zen-controls');
+            if (!isActive) {
+                circle.style.transform = getExhaleScale();
+            }
+        }
+
+        function exitImmersiveView() {
+            document.body.classList.remove('is-immersive', 'show-zen-controls');
+            immersiveToggle.checked = false;
+            isImmersivePreferred = false;
+            if (!isActive) {
+                circle.style.transform = getExhaleScale();
+            }
+        }
+
+        zenExitBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            exitImmersiveView();
+        });
+        zenStopBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            stopSession(false);
+        });
+
+        // Click or tap anywhere on screen in immersive mode toggles the zen floating controls
+        let zenFadeTimeout = null;
+        function toggleZenControls(e) {
+            if (!document.body.classList.contains('is-immersive')) return;
+            // Don't toggle if clicking directly on a zen control button
+            if (zenFloatingBar.contains(e.target)) return;
+
+            const isCurrentlyShown = document.body.classList.contains('show-zen-controls');
+            clearTimeout(zenFadeTimeout);
+
+            if (isCurrentlyShown) {
+                // If already visible, tap/click fades it out
+                document.body.classList.remove('show-zen-controls');
+            } else {
+                // Fade in menu and set timer to fade back out after 3.5 seconds
+                document.body.classList.add('show-zen-controls');
+                zenFadeTimeout = setTimeout(() => {
+                    document.body.classList.remove('show-zen-controls');
+                }, 3500);
+            }
+        }
+
+        document.addEventListener('click', toggleZenControls);
+
+        /* ==========================================================================
+           Session Start / Stop / Countdown
+           ========================================================================== */
+        let isCountingDown = false;
+
+        startStopBtn.addEventListener('click', () => {
+            if (isCountingDown) {
+                stopSession(false);
+                return;
+            }
+
+            if (!isActive) {
+                // 1. Immediately hide the settings menu before starting countdown
+                settingsContainer.style.display = 'none';
+
+                // 2. If Zen / Immersive is requested, enter full screen immediately
+                if (isImmersivePreferred) {
+                    enterImmersiveView();
+                }
+
+                startCountdown();
+            } else {
+                if (currentMode === 'energy' && energyState.phase === 'hold_exhale') {
+                    // In energy mode exhale hold, clicking advances immediately to inhale hold
+                    endEnergyHoldExhale();
+                } else {
+                    stopSession(false);
+                }
+            }
+        });
+
+        function startCountdown() {
+            isCountingDown = true;
+            startStopBtn.textContent = 'Cancel';
+            startStopBtn.disabled = false;
+            let count = 3;
+            instruction.textContent = `Get ready... ${count}`;
+            circleText.textContent = count;
+            
+            countdownInterval = setInterval(() => {
+                count--;
+                if (count > 0) {
+                    instruction.textContent = `Get ready... ${count}`;
+                    circleText.textContent = count;
+                } else {
+                    clearInterval(countdownInterval);
+                    countdownInterval = null;
+                    isCountingDown = false;
+                    circleText.textContent = '';
+                    instruction.textContent = 'Begin';
+                    setTimeout(startSession, 400);
+                }
+            }, 1000);
+        }
+
+        function startSession() {
+            isActive = true;
+            startStopBtn.textContent = 'Stop';
+            startStopBtn.disabled = false;
+            settingsContainer.style.display = 'none';
+
+            // Ensure Zen mode is active if selected and controls are faded out
+            if (isImmersivePreferred) {
+                enterImmersiveView();
+            }
+
+            // Start white noise only when the session actually begins
+            if (isNoiseEnabled) {
+                startWhiteNoiseAudio();
+            }
+
+            if (currentMode === 'relaxation') {
+                startRelaxation();
+            } else if (currentMode === 'energy') {
+                startEnergy();
+            }
+        }
+
+        function stopSession(completed = false) {
+            isActive = false;
+            isCountingDown = false;
+            clearInterval(countdownInterval);
+            clearInterval(mainInterval);
+            clearTimeout(breathingTimeoutId);
+            clearTimeout(zenFadeTimeout);
+            countdownInterval = null;
+            mainInterval = null;
+            breathingTimeoutId = null;
+
+            // Automatically turn off white noise when session stops or finishes
+            stopWhiteNoiseAudio();
+
+            startStopBtn.textContent = 'Start';
+            settingsContainer.style.display = 'block';
+            resetAnimation();
+            exitImmersiveView();
+
+            if (completed) {
+                playEndChimes();
+                showCompletionScreen();
+            } else {
+                instruction.textContent = 'Session paused';
+                // Reset timer display
+                if (currentMode === 'relaxation') {
+                    if (selectedDuration > 0) {
+                        remainingTime = selectedDuration * 60;
+                        updateTimerDisplay(remainingTime);
+                    } else {
+                        updateTimerDisplay(0);
+                    }
+                } else {
+                    updateTimerDisplay(0);
+                }
+            }
+
+            energyState = { level: energyState.level, round: 1, phase: 'idle', breathCount: 0, timer: 0 };
+        }
+
+        function showCompletionScreen() {
+            if (currentMode === 'relaxation') {
+                completionSummary.textContent = `You completed a restful ${selectedDuration} minute relaxation breathing session.`;
+            } else {
+                const lvlDesc = energyState.level === 'custom' ? 'Custom' : `Level ${energyState.level}`;
+                completionSummary.textContent = `Outstanding! You completed all 3 rounds of ${lvlDesc} energy breathwork.`;
+            }
+            completionModal.classList.remove('hidden');
+            updateTimerDisplay(0);
+        }
+
+        function updateTimerDisplay(timeInSeconds) {
+            const minutes = Math.floor(Math.max(0, timeInSeconds) / 60);
+            const seconds = Math.max(0, timeInSeconds) % 60;
+            timerDisplay.textContent = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+        }
+
+        /* Dynamic Breath Scaling (Customizable Circle Size) */
+        function getInhaleScale(isFast = false) {
+            const isImmersive = document.body.classList.contains('is-immersive');
+            let base = 2.2;
+            if (isFast) {
+                base = isImmersive ? 2.2 : 2.0;
+            } else {
+                base = isImmersive ? 2.42 : 2.2;
+            }
+            return `scale(${(base * circleSizeMultiplier).toFixed(3)})`;
+        }
+
+        function getExhaleScale() {
+            const isImmersive = document.body.classList.contains('is-immersive');
+            const base = isImmersive ? 0.28 : 0.35;
+            return `scale(${(base * circleSizeMultiplier).toFixed(3)})`;
+        }
+
+        function resetAnimation() {
+            circle.style.transitionDuration = '0.3s';
+            circle.style.transform = getExhaleScale();
+            circleText.textContent = '';
+        }
+
+        /* ==========================================================================
+           Relaxation Mode Execution
+           ========================================================================== */
+        function startRelaxation() {
+            mainInterval = setInterval(() => {
+                remainingTime--;
+                updateTimerDisplay(remainingTime);
+                if (remainingTime <= 0) {
+                    instruction.textContent = 'Finishing final breath...';
+                    clearInterval(mainInterval);
+                }
+            }, 1000);
+
+            runRelaxationCycle();
+        }
+
+        function runRelaxationCycle() {
+            if (!isActive) return;
+            const { inhale, pause, exhale, postExhalePause } = relaxationTimings;
+
+            // 1. Inhale: circle expands (10% larger in fullscreen)
+            instruction.textContent = remainingTime <= 0 ? 'Finishing cycle...' : 'Inhale deeply';
+            circle.style.transitionDuration = `${inhale}s`;
+            circle.style.transform = getInhaleScale();
+
+            breathingTimeoutId = setTimeout(() => {
+                if (!isActive) return;
+
+                // 2. Pause after inhale
+                instruction.textContent = remainingTime <= 0 ? 'Finishing cycle...' : 'Gently hold';
+
+                breathingTimeoutId = setTimeout(() => {
+                    if (!isActive) return;
+
+                    // 3. Exhale: circle smoothly shrinks (20% smaller in fullscreen)
+                    instruction.textContent = remainingTime <= 0 ? 'Finishing cycle...' : 'Release and exhale';
+                    circle.style.transitionDuration = `${exhale}s`;
+                    circle.style.transform = getExhaleScale();
+
+                    breathingTimeoutId = setTimeout(() => {
+                        if (!isActive) return;
+
+                        // 4. Subtle rest before next breath
+                        instruction.textContent = '';
+                        breathingTimeoutId = setTimeout(() => {
+                            if (remainingTime <= 0) {
+                                stopSession(true);
+                            } else if (isActive) {
+                                runRelaxationCycle();
+                            }
+                        }, postExhalePause * 1000);
+                    }, exhale * 1000);
+                }, pause * 1000);
+            }, inhale * 1000);
+        }
+
+        /* ==========================================================================
+           Energy Mode Execution (3 Rounds with Retention)
+           ========================================================================== */
+        function startEnergy() {
+            energyState.round = 1;
+            runEnergyBreathing();
+        }
+
+        function runEnergyBreathing() {
+            if (!isActive || energyState.round > 3) {
+                stopSession(true);
+                return;
+            }
+
+            energyState.phase = 'breathing';
+            energyState.breathCount = 0;
+            const levelConfig = getEnergyLevelConfig();
+            const breathDurationMs = (levelConfig.breathing / levelConfig.breaths) * 1000;
+            const halfBreathSec = (breathDurationMs / 2000).toFixed(2);
+
+            instruction.textContent = `Round ${energyState.round} / 3: Deep Breaths`;
+            circle.style.transitionDuration = `${halfBreathSec}s`;
+
+            function cycleBreath() {
+                if (!isActive) {
+                    clearInterval(mainInterval);
+                    return;
+                }
+
+                if (energyState.breathCount >= levelConfig.breaths) {
+                    clearInterval(mainInterval);
+                    setTimeout(() => {
+                        if (isActive) runFinalSlowBreath();
+                    }, 400);
+                    return;
+                }
+
+                energyState.breathCount++;
+                circleText.textContent = `${energyState.breathCount} / ${levelConfig.breaths}`;
+                circle.style.transform = getInhaleScale(true);
+
+                setTimeout(() => {
+                    if (!isActive) return;
+                    circle.style.transform = getExhaleScale();
+                }, breathDurationMs / 2);
+            }
+
+            cycleBreath();
+            mainInterval = setInterval(cycleBreath, breathDurationMs);
+        }
+
+        function runFinalSlowBreath() {
+            if (!isActive) return;
+            clearTimeout(breathingTimeoutId);
+            instruction.textContent = 'Take a deep final breath in...';
+            circleText.textContent = '';
+
+            circle.style.transitionDuration = '4s';
+            circle.style.transform = getInhaleScale();
+
+            breathingTimeoutId = setTimeout(() => {
+                if (!isActive) return;
+                instruction.textContent = 'Hold briefly...';
+                
+                breathingTimeoutId = setTimeout(() => {
+                    if (!isActive) return;
+                    instruction.textContent = '...and Exhale completely';
+                    circle.style.transitionDuration = '4s';
+                    circle.style.transform = getExhaleScale();
+
+                    breathingTimeoutId = setTimeout(() => {
+                        if (!isActive) return;
+                        runEnergyHoldExhale();
+                    }, 4000);
+                }, 1500);
+            }, 4000);
+        }
+
+        function runEnergyHoldExhale() {
+            energyState.phase = 'hold_exhale';
+            const config = getEnergyLevelConfig();
+            const isFinalRound = (energyState.round === 3);
+
+            if (isFinalRound && energyState.level !== 'custom') {
+                // Free retention count-up on final round for preset levels
+                energyState.timer = 0;
+                instruction.textContent = 'Retention: HOLD on exhale (Tap Inhale when ready)';
+                startStopBtn.textContent = 'Inhale';
+                updateTimerDisplay(energyState.timer);
+                
+                mainInterval = setInterval(() => {
+                    if (!isActive) { clearInterval(mainInterval); return; }
+                    energyState.timer++;
+                    updateTimerDisplay(energyState.timer);
+                }, 1000);
+            } else {
+                energyState.timer = config.hold;
+                instruction.textContent = `Retention: HOLD on exhale (Round ${energyState.round}/3)`;
+                startStopBtn.textContent = 'Inhale';
+                updateTimerDisplay(energyState.timer);
+
+                mainInterval = setInterval(() => {
+                    if (!isActive) { clearInterval(mainInterval); return; }
+                    energyState.timer--;
+                    updateTimerDisplay(energyState.timer);
+                    if (energyState.timer <= 0) {
+                        endEnergyHoldExhale();
+                    }
+                }, 1000);
+            }
+        }
+
+        function endEnergyHoldExhale() {
+            clearInterval(mainInterval);
+            mainInterval = null;
+            playEndChimes();
+            runEnergyHoldInhale();
+        }
+
+        function runEnergyHoldInhale() {
+            energyState.phase = 'hold_inhale';
+            energyState.timer = 15; // 15-second recovery breath hold
+            instruction.textContent = 'Inhale deeply and HOLD for 15s';
+            circle.style.transitionDuration = '2s';
+            circle.style.transform = getInhaleScale();
+            startStopBtn.textContent = 'Stop';
+            updateTimerDisplay(energyState.timer);
+
+            mainInterval = setInterval(() => {
+                if (!isActive) { clearInterval(mainInterval); return; }
+                energyState.timer--;
+                updateTimerDisplay(energyState.timer);
+                if (energyState.timer <= 0) {
+                    endEnergyRound();
+                }
+            }, 1000);
+        }
+
+        function endEnergyRound() {
+            clearInterval(mainInterval);
+            clearTimeout(breathingTimeoutId);
+            mainInterval = null;
+            playEndChimes();
+            
+            energyState.round++;
+            if (energyState.round > 3) {
+                stopSession(true);
+                return;
+            }
+
+            instruction.textContent = `Exhale. Prepare for Round ${energyState.round}...`;
+            circle.style.transitionDuration = '1.5s';
+            circle.style.transform = getExhaleScale();
+
+            breathingTimeoutId = setTimeout(() => {
+                if (!isActive) return;
+                runEnergyBreathing();
+            }, 3000);
+        }
+
+        /* ==========================================================================
+           Offline Web Audio Synthesizer (White Noise & Calming End Chimes)
+           ========================================================================== */
+        function getOrCreateAudioContext() {
+            if (!audioContext) {
+                const AudioCtx = window.AudioContext || window.webkitAudioContext;
+                if (AudioCtx) {
+                    audioContext = new AudioCtx();
+                }
+            }
+            if (audioContext && audioContext.state === 'suspended') {
+                audioContext.resume();
+            }
+            return audioContext;
+        }
+
+        function playEndChimes() {
+            try {
+                const ctx = getOrCreateAudioContext();
+                if (!ctx) return;
+
+                function chime(freq, startOffset, duration) {
+                    const osc = ctx.createOscillator();
+                    const gain = ctx.createGain();
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(freq, ctx.currentTime + startOffset);
+                    
+                    gain.gain.setValueAtTime(0.0001, ctx.currentTime + startOffset);
+                    gain.gain.exponentialRampToValueAtTime(0.35, ctx.currentTime + startOffset + 0.05);
+                    gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + startOffset + duration);
+                    
+                    osc.connect(gain);
+                    gain.connect(ctx.destination);
+                    osc.start(ctx.currentTime + startOffset);
+                    osc.stop(ctx.currentTime + startOffset + duration);
+                }
+
+                // E-minor gentle meditative chord arpeggio (E5, B5, E6)
+                chime(659.25, 0.0, 1.4);
+                chime(987.77, 0.2, 1.6);
+                chime(1318.51, 0.4, 2.0);
+            } catch (err) {
+                console.warn('Audio chime error:', err);
+            }
+        }
+
+        function initWhiteNoise() {
+            const ctx = getOrCreateAudioContext();
+            if (!ctx) return;
+
+            // Generate 2 seconds of pink/white ambient noise in memory
+            const bufferSize = ctx.sampleRate * 2;
+            const noiseBuffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+            const output = noiseBuffer.getChannelData(0);
+
+            // Filtered brown/pink noise generator for gentler soothing tone
+            let lastOut = 0.0;
+            for (let i = 0; i < bufferSize; i++) {
+                const white = Math.random() * 2 - 1;
+                output[i] = (lastOut + (0.02 * white)) / 1.02;
+                lastOut = output[i];
+                output[i] *= 3.5; // Gain compensation
+            }
+
+            noiseSource = ctx.createBufferSource();
+            noiseSource.buffer = noiseBuffer;
+            noiseSource.loop = true;
+
+            gainNode = ctx.createGain();
+            gainNode.gain.setValueAtTime(0, ctx.currentTime);
+
+            noiseSource.connect(gainNode);
+            gainNode.connect(ctx.destination);
+            noiseSource.start();
+        }
+
+        function startWhiteNoiseAudio() {
+            const ctx = getOrCreateAudioContext();
+            if (!ctx) return;
+            if (!noiseSource) {
+                initWhiteNoise();
+            }
+            if (gainNode) {
+                gainNode.gain.cancelScheduledValues(ctx.currentTime);
+                gainNode.gain.setValueAtTime(parseFloat(volumeSlider.value), ctx.currentTime);
+            }
+            isNoisePlaying = true;
+        }
+
+        function stopWhiteNoiseAudio() {
+            if (gainNode && audioContext) {
+                gainNode.gain.cancelScheduledValues(audioContext.currentTime);
+                gainNode.gain.setValueAtTime(0, audioContext.currentTime);
+            }
+            isNoisePlaying = false;
+        }
+
+        function toggleWhiteNoise() {
+            isNoiseEnabled = !isNoiseEnabled;
+            updateNoiseUI();
+
+            // If a session is currently running, immediately start or stop audio
+            if (isActive) {
+                if (isNoiseEnabled) {
+                    startWhiteNoiseAudio();
+                } else {
+                    stopWhiteNoiseAudio();
+                }
+            }
+        }
+
+        function updateNoiseUI() {
+            if (isNoiseEnabled) {
+                volumeContainer.classList.remove('hidden');
+                soundOnIcon.classList.remove('hidden');
+                soundOffIcon.classList.add('hidden');
+            } else {
+                volumeContainer.classList.add('hidden');
+                soundOnIcon.classList.add('hidden');
+                soundOffIcon.classList.remove('hidden');
+            }
+        }
+
+        noiseBtn.addEventListener('click', toggleWhiteNoise);
+        volumeSlider.addEventListener('input', (e) => {
+            if (gainNode && audioContext && isNoisePlaying) {
+                gainNode.gain.setValueAtTime(parseFloat(e.target.value), audioContext.currentTime);
+            }
+        });
+    </script>
+</body>
+</html>
