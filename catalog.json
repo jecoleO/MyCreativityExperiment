@@ -20,6 +20,16 @@
     "access": "free"
   },
   {
+    "id": "Breath Meditation",
+  "title": "Breath Meditation",
+  "section": "Health",
+  "description": "Guided breath control app for focus and relaxation",
+  "path": "/content/health/breathing_meditation_app.html",
+  "access": "free",
+  "badge": "HTML5 Arcade",
+  "offlineReady": true
+  },
+  {
   "id": "pixel-bistro",
   "title": "Pixel Bistro",
   "section": "Games",
