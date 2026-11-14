@@ -1,0 +1,32 @@
+[
+  {
+    "slug": "day-1",
+    "title": "Joyo Kanji Course: Day 1",
+    "section": "Language Study",
+    "language": "Japanese",
+    "subsection": "Joyo Kanji Course",
+    "description": "Foundational Joyo kanji drills, core vocabulary, and interactive grammar cloze.",
+    "path": "/content/language-study/japanese/joyo-kanji/day-1.html",
+    "access": "free"
+  },
+  {
+    "slug": "day-2",
+    "title": "Joyo Kanji Course: Day 2",
+    "section": "Language Study",
+    "language": "Japanese",
+    "subsection": "Joyo Kanji Course",
+    "description": "Directional particles, essential verb conjugations, and active recall drills.",
+    "path": "/content/language-study/japanese/joyo-kanji/day-2.html",
+    "access": "free"
+  },
+  {
+    "slug": "pixel-bistro",
+    "title": "Pixel Bistro",
+    "section": "Games",
+    "language": null,
+    "subsection": null,
+    "description": "Fast-paced retro counter service arcade cartridge. Zero dependencies, plays offline.",
+    "path": "/content/games/pixel-bistro.html",
+    "access": "free"
+  }
+]

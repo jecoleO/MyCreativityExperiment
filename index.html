@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>My Creativity Experiment | Experiments merging Human creativity with AI</title>
+  <link rel="stylesheet" href="/style.css" />
+  <script src="https://app.lemonsqueezy.com/js/lemon.js" defer></script>
+</head>
+<body>
+  <header class="ls-header">
+    <div class="ls-container ls-header-inner">
+      <div class="ls-brand">
+        <span class="ls-badge">LIGHT SYSTEM // STUDIO</span>
+        <h1>My Creativity Experiment</h1>
+        <p class="ls-subtitle">Experiments merging Human creativity with AI</p>
+      </div>
+      <div class="ls-pass-box" id="pass-status-box">
+        <a href="https://YOUR-STORE.lemonsqueezy.com/buy/YOUR-PASS-ID?embed=1" class="lemonsqueezy-button ls-btn-primary">
+          All-Access Pass — $30
+        </a>
+        <button class="ls-btn-ghost" id="open-key-modal">Have a license key?</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="ls-container">
+    <nav class="ls-tabs" aria-label="Primary Sections">
+      <button class="ls-tab active" data-section="All">All</button>
+      <button class="ls-tab" data-section="Language Study">Language Study</button>
+      <button class="ls-tab" data-section="Games">Games</button>
+      <button class="ls-tab" data-section="Health">Health</button>
+      <button class="ls-tab" data-section="Utilities">Utilities</button>
+      <button class="ls-tab" data-section="Music">Music</button>
+      <button class="ls-tab" data-section="Books">Books</button>
+    </nav>
+
+    <div class="ls-subnav hidden" id="language-subnav">
+      <div class="ls-pill-row">
+        <span class="ls-sub-label">Language:</span>
+        <button class="ls-subtab active" data-language="All">All Languages</button>
+        <button class="ls-subtab" data-language="Japanese">Japanese</button>
+        <button class="ls-subtab" data-language="English">English</button>
+      </div>
+
+      <div class="ls-pill-row hidden" id="japanese-tracks">
+        <span class="ls-sub-label">Japanese Track:</span>
+        <button class="ls-subtab active" data-subsection="All">All Japanese</button>
+        <button class="ls-subtab" data-subsection="Joyo Kanji Course">Joyo Kanji Course</button>
+        <button class="ls-subtab" data-subsection="News Articles">News Articles</button>
+      </div>
+
+      <div class="ls-pill-row hidden" id="english-tracks">
+        <span class="ls-sub-label">English Track:</span>
+        <button class="ls-subtab active" data-subsection="Articles">Articles</button>
+      </div>
+    </div>
+
+    <section class="ls-grid" id="catalog-grid"></section>
+  </main>
+
+  <footer class="ls-footer">
+    <div class="ls-container ls-footer-inner">
+      <span>&copy; 2026 My Creativity Experiment</span>
+      <span>Self-Contained Local-First Editions</span>
+    </div>
+  </footer>
+
+  <dialog class="ls-modal" id="key-modal">
+    <form method="dialog" class="ls-modal-body" id="key-form">
+      <h3>Activate All-Access Pass</h3>
+      <p>Enter your Lemon Squeezy license key to unlock all vaulted releases and offline downloads.</p>
+      <input type="text" id="license-input" placeholder="XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX" required />
+      <p class="ls-error" id="license-error"></p>
+      <div class="ls-modal-actions">
+        <button type="button" class="ls-btn-ghost" id="close-key-modal">Cancel</button>
+        <button type="submit" class="ls-btn-primary" id="verify-key-btn">Activate</button>
+      </div>
+    </form>
+  </dialog>
+
+  <script src="/unlock.js"></script>
+</body>
+</html>
