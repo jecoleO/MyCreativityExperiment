@@ -12,13 +12,14 @@
         }
     </script>
     <style>
-        /* Retro terminal fonts with fallback stack that requires 0 internet connections */
+        /* Retro terminal fonts with fallback stack requiring zero external connections */
         :root {
             --term-font: 'VT323', 'Consolas', 'Lucida Console', 'Courier New', Courier, monospace;
             --green: #00ff66;
             --amber: #ffaa00;
             --cyan: #00e5ff;
             --alert: #ff3344;
+            --magenta: #e066ff;
         }
 
         body {
@@ -48,9 +49,10 @@
             width: 100% !important;
             height: 100% !important;
             object-fit: contain;
+            display: block;
         }
 
-        /* Scanline CRT overlay for PS1 immersion */
+        /* Scanline CRT overlay for authentic PS1 immersion */
         #crt-overlay {
             position: absolute;
             top: 0;
@@ -136,13 +138,15 @@
             100% { transform: translate(3px, -2px) scale(0.998); }
         }
 
-        /* Scientific Readout Panel */
+        /* Scientific Readout & Relic Manifest Panel */
         #science-panel {
             position: absolute;
             top: 75px;
             right: 16px;
-            width: 320px;
-            background: rgba(0, 20, 12, 0.88);
+            width: 340px;
+            max-height: 74vh;
+            overflow-y: auto;
+            background: rgba(0, 20, 12, 0.92);
             border: 1px solid var(--cyan);
             box-shadow: 0 0 14px rgba(0, 229, 255, 0.25);
             padding: 12px;
@@ -165,14 +169,28 @@
         }
         .sci-row { display: flex; justify-content: space-between; margin-bottom: 3px; }
         .sci-val { color: #fff; font-weight: bold; text-align: right; }
+        .relic-manifest {
+            margin-top: 10px;
+            padding-top: 8px;
+            border-top: 1px dashed rgba(0, 229, 255, 0.45);
+        }
+        .relic-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 3px 8px;
+            font-size: 13px;
+            margin-top: 5px;
+        }
+        .relic-item-done { color: var(--green); }
+        .relic-item-open { color: #668877; }
 
-        /* Landmark Nav Beacon Indicator */
+        /* Relic Proximity Beacon Indicator (Numeric Distance Only) */
         #beacon-hud {
             position: absolute;
             top: 16px;
             left: 50%;
             transform: translateX(-50%);
-            background: rgba(0, 25, 15, 0.75);
+            background: rgba(0, 25, 15, 0.85);
             border: 1px solid var(--amber);
             color: var(--amber);
             padding: 6px 14px;
@@ -200,6 +218,7 @@
             text-align: center;
             border-radius: 6px;
             animation: pulseBanner 1s infinite alternate;
+            white-space: pre-line;
         }
         @keyframes pulseBanner {
             from { transform: translateX(-50%) scale(1); }
@@ -229,8 +248,8 @@
             position: absolute;
             bottom: 120px;
             left: 16px;
-            width: 340px;
-            height: 130px;
+            width: 360px;
+            height: 135px;
             overflow: hidden;
             font-size: 17px;
             color: var(--cyan);
@@ -240,7 +259,7 @@
         }
 
         .log-entry {
-            background: rgba(0, 16, 10, 0.7);
+            background: rgba(0, 16, 10, 0.75);
             border-left: 2px solid var(--cyan);
             padding: 3px 6px;
             margin-top: 3px;
@@ -255,21 +274,39 @@
         .telemetry {
             font-size: 18px;
             line-height: 1.25;
-            background: rgba(0, 20, 10, 0.65);
+            background: rgba(0, 20, 10, 0.72);
             padding: 10px 14px;
             border: 1px solid rgba(0, 255, 102, 0.4);
             box-shadow: inset 0 0 10px rgba(0, 255, 102, 0.15);
         }
 
-        #crosshair {
+        #crosshair-wrap {
             position: absolute;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            pointer-events: none;
+        }
+
+        #crosshair {
             color: var(--green);
             font-size: 20px;
             font-weight: bold;
-            opacity: 0.8;
+            opacity: 0.85;
+            line-height: 1;
+        }
+
+        #horizon-readout {
+            margin-top: 6px;
+            font-size: 12px;
+            color: rgba(0, 255, 102, 0.85);
+            background: rgba(0, 18, 10, 0.55);
+            padding: 1px 6px;
+            border: 1px solid rgba(0, 255, 102, 0.25);
+            border-radius: 3px;
         }
 
         /* Controls */
@@ -333,6 +370,7 @@
         #btn-jump { bottom: 30px; right: 110px; width: 75px; height: 75px; border-radius: 50%; display: none; align-items: center; justify-content: center; border-color: var(--cyan); color: var(--cyan); animation: pulseCyan 1.2s infinite; }
         #btn-land { bottom: 30px; left: 50%; transform: translateX(-50%); width: 90px; height: 90px; border-radius: 50%; display: none; align-items: center; justify-content: center; border-color: var(--amber); color: var(--amber); animation: pulseAmber 1s infinite; z-index: 35; }
         #btn-launch { bottom: 30px; left: 50%; transform: translateX(-50%); width: 90px; height: 90px; border-radius: 50%; display: none; align-items: center; justify-content: center; border-color: #ff66ff; color: #ff66ff; z-index: 35; }
+        #btn-singularity { bottom: 132px; left: 50%; transform: translateX(-50%); width: 175px; height: 48px; border-radius: 24px; display: none; align-items: center; justify-content: center; font-size: 15px; border-color: var(--magenta); color: #fff; background: rgba(65, 10, 95, 0.9); animation: pulseMagenta 1.1s infinite; z-index: 36; }
 
         @keyframes pulseCyan {
             0% { box-shadow: 0 0 0 0 rgba(0, 229, 255, 0.5); }
@@ -344,22 +382,29 @@
             70% { box-shadow: 0 0 0 12px rgba(255, 170, 0, 0); }
             100% { box-shadow: 0 0 0 0 rgba(255, 170, 0, 0); }
         }
+        @keyframes pulseMagenta {
+            0% { box-shadow: 0 0 0 0 rgba(224, 102, 255, 0.65); }
+            70% { box-shadow: 0 0 0 14px rgba(224, 102, 255, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(224, 102, 255, 0); }
+        }
 
         #desktop-help {
             font-size: 15px;
             color: #99bb99;
             display: none;
-            background: rgba(0, 20, 10, 0.65);
+            background: rgba(0, 20, 10, 0.72);
             padding: 8px 12px;
             border: 1px solid rgba(0, 255, 102, 0.3);
             line-height: 1.35;
         }
         @media (min-width: 1024px) { #desktop-help { display: block; } }
 
-        #btn-cockpit { top: 16px; right: 280px; font-size: 14px; padding: 6px 10px; }
-        #btn-science { top: 16px; right: 180px; font-size: 14px; padding: 6px 10px; border-color: var(--cyan); color: var(--cyan); }
-        #btn-sound { top: 16px; right: 100px; font-size: 14px; padding: 6px 10px; }
+        #btn-level { top: 16px; right: 360px; font-size: 14px; padding: 6px 10px; border-color: var(--amber); color: var(--amber); }
+        #btn-cockpit { top: 16px; right: 270px; font-size: 14px; padding: 6px 10px; }
+        #btn-science { top: 16px; right: 185px; font-size: 14px; padding: 6px 10px; border-color: var(--cyan); color: var(--cyan); }
+        #btn-sound { top: 16px; right: 105px; font-size: 14px; padding: 6px 10px; }
         @media (max-width: 1023px) {
+            #btn-level { right: 250px; top: auto; bottom: 185px; }
             #btn-cockpit { right: 170px; top: auto; bottom: 185px; }
             #btn-science { right: 90px; top: auto; bottom: 185px; }
             #btn-sound { right: 20px; top: auto; bottom: 185px; }
@@ -367,18 +412,52 @@
 
         #start-overlay {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0, 10, 5, 0.9);
+            background: rgba(0, 10, 5, 0.92);
             display: flex; justify-content: center; align-items: center;
             color: var(--green); font-size: 26px; z-index: 200;
             flex-direction: column; cursor: pointer; text-align: center;
+            padding: 20px; box-sizing: border-box;
         }
         .blink { animation: blinker 1s linear infinite; }
         @keyframes blinker { 50% { opacity: 0; } }
 
+        #cutscene-hud {
+            position: absolute;
+            bottom: 58px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 120;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            pointer-events: auto;
+            text-align: center;
+        }
+        #cutscene-caption {
+            background: rgba(12, 4, 24, 0.88);
+            border: 1px solid var(--magenta);
+            color: #f5d6ff;
+            padding: 8px 18px;
+            font-size: 17px;
+            border-radius: 4px;
+            box-shadow: 0 0 16px rgba(224, 102, 255, 0.45);
+        }
+        #btn-skip-cutscene {
+            background: rgba(0, 25, 15, 0.85);
+            border: 1px solid var(--cyan);
+            color: var(--cyan);
+            font-family: var(--term-font);
+            font-size: 14px;
+            padding: 4px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
         #transition-overlay {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             background: #fff; opacity: 0; pointer-events: none; z-index: 50;
-            transition: opacity 1.2s ease-in-out;
+            transition: opacity 1.1s ease-in-out;
         }
 
         #speed-bar-container {
@@ -401,7 +480,7 @@
         </div>
         <div class="canopy-dash">
             <div><span class="dash-led"></span>LIFE SUPPORT: NOMINAL</div>
-            <div>[ CANOPY RETICLE LOCK ]</div>
+            <div>[ HORIZON GYRO STABILIZER ACTIVE ]</div>
             <div>HULL INTEGRITY: 100%</div>
         </div>
     </div>
@@ -418,10 +497,21 @@
         <div class="sci-row"><span>SURFACE GRAVITY:</span><span id="sci-grav" class="sci-val">1.00 g</span></div>
         <div class="sci-row"><span>PRIMARY COMPOSITION:</span><span id="sci-comp" class="sci-val">Silicates, Iron</span></div>
         <div class="sci-row"><span>MAGNETOSPHERE / RAD:</span><span id="sci-rad" class="sci-val">0.03 mSv/hr</span></div>
+
+        <div class="relic-manifest">
+            <div style="display:flex; justify-content:space-between; color:var(--magenta); font-weight:bold;">
+                <span>PRECURSOR RELICS:</span>
+                <span id="sci-relic-count">0 / 16 CORE</span>
+            </div>
+            <div id="sci-relic-status" style="font-size:12px; color:#ccc; margin-top:2px;">
+                Collect relics from major planets &amp; moons to open the Galactic Core Singularity.
+            </div>
+            <div id="sci-relic-grid" class="relic-grid"></div>
+        </div>
     </div>
 
     <div id="beacon-hud">
-        NAV BEACON: <span id="beacon-target" style="color:#fff; font-weight:bold;">UNKNOWN</span> • <span id="beacon-dist">0</span>m <span id="beacon-arrow">▲</span>
+        RELIC SIGNAL: <span id="beacon-target" style="color:#fff; font-weight:bold;">UNKNOWN</span> • <span id="beacon-dist" style="font-weight:bold;">0</span>m
     </div>
 
     <div id="discovery-banner">
@@ -429,37 +519,47 @@
         <span id="discovery-title" style="font-size:16px; color:var(--amber);">HISTORICAL ARTIFACT ARCHIVED</span>
     </div>
 
+    <div id="cutscene-hud">
+        <div id="cutscene-caption">GALACTIC CORE SINGULARITY TRANSIT...</div>
+        <button id="btn-skip-cutscene" type="button">SKIP SEQUENCE [ESC]</button>
+    </div>
+
     <div id="start-overlay">
         <div class="blink">INITIALIZE COSMO NAV COMPUTER</div>
-        <div style="font-size: 16px; margin-top: 15px; color: var(--cyan);">[ CLICK ANYWHERE TO ENGAGE CONTROLS & AUDIO ]</div>
-        <div style="font-size: 14px; margin-top: 10px; color: #88aa88;">PS1 Starlight Engine v3.3 • Fully Offline Standalone</div>
+        <div style="font-size: 16px; margin-top: 15px; color: var(--cyan);">[ CLICK ANYWHERE TO ENTER GALACTIC CORE SINGULARITY ]</div>
+        <div style="font-size: 14px; margin-top: 10px; color: #88aa88;">PS1 Starlight Engine v4.5 • Complete Edition</div>
     </div>
 
     <div id="game-container">
         <div id="ui-layer">
             <div style="display:flex; justify-content:space-between; width:100%; align-items: flex-start;">
                 <div class="telemetry">
-                    <div>SECTOR: <span id="sys-name" style="color:#fff">DEEP SPACE</span></div>
+                    <div>SECTOR: <span id="sys-name" style="color:#fff">SAGITTARIUS A*</span></div>
                     <div>ALTITUDE: <span id="alt-disp" style="color:var(--cyan)">---</span></div>
                     <div>NAV TARGET: <span id="tgt-disp" style="color:var(--amber)">NONE</span></div>
                     <div>VELOCITY: <span id="vel-disp">0</span> u/s</div>
-                    <div>STATUS: <span id="env-disp">ORBITAL CRUISE</span></div>
-                    <div>SURFACE FLOODLIGHT: <span id="lux-disp" style="color:var(--green)">STANDBY</span></div>
+                    <div>RELICS: <span id="relic-disp" style="color:var(--magenta)">0/16</span></div>
+                    <div>STATUS: <span id="env-disp">SINGULARITY APPROACH</span></div>
+                    <div>FLOODLIGHT: <span id="lux-disp" style="color:var(--green)">STANDBY</span></div>
                 </div>
                 <div id="desktop-help">
                     <span style="color:#fff; font-weight:bold;">PILOT FLIGHT MANUAL</span><br>
-                    W/S: Pitch/Forward/Back<br>
-                    A/D: Strafe Left/Right<br>
-                    MOUSE: Look & Aim Direction<br>
-                    SHIFT: Hyper-Thrust Booster<br>
+                    W/S: Forward / Reverse<br>
+                    A/D: Strafe Left / Right<br>
+                    MOUSE / DRAG / ARROWS: Look &amp; Aim<br>
+                    R: Level Horizon<br>
+                    SHIFT: Thruster Boost (2.75x)<br>
                     TAB: Cycle Planetary Radar<br>
                     F: Engage Autopilot Warp<br>
                     SPACE: Atmospheric Descent / Ascent<br>
-                    <span style="color:var(--cyan)">T: Science Spectrometer • C: Cockpit • M: Audio</span>
+                    <span style="color:var(--cyan)">T: Spectrometer &amp; Relics • C: Canopy • M: Audio</span>
                 </div>
             </div>
 
-            <div id="crosshair">+</div>
+            <div id="crosshair-wrap">
+                <div id="crosshair">+</div>
+                <div id="horizon-readout">HORIZON 0°</div>
+            </div>
             <div id="log-area"></div>
 
             <div id="speed-bar-container">
@@ -468,6 +568,7 @@
         </div>
 
         <div id="controls-layer">
+            <div id="btn-level" class="action-btn">LEVEL</div>
             <div id="btn-cockpit" class="action-btn">CANOPY</div>
             <div id="btn-science" class="action-btn">SCAN</div>
             <div id="btn-sound" class="action-btn">AUDIO</div>
@@ -480,6 +581,7 @@
             <div id="btn-jump" class="action-btn">WARP</div>
             <div id="btn-land" class="action-btn">DESCEND</div>
             <div id="btn-launch" class="action-btn">LIFTOFF</div>
+            <div id="btn-singularity" class="action-btn">ENTER SINGULARITY</div>
         </div>
     </div>
 
@@ -488,6 +590,8 @@
     const RENDER_WIDTH = 320;
     const RENDER_HEIGHT = 240;
     const AU = 35000;
+    const TERRAIN_SIZE = 2600;
+    const TERRAIN_SEGS = 180;
 
     // --- ZERO-GC PRE-ALLOCATED MATH SCRATCHPADS ---
     const _V1 = new THREE.Vector3();
@@ -607,48 +711,43 @@
             vec3 L = normalize(sunPosition - vWorldPosition);
             vec3 V = normalize(cameraPosition - vWorldPosition);
 
-            // --- REALISTIC SCIENTIFIC PLANETARY SURFACES ---
-            if(type == 1) { // Earth: Continents, Mountain Ridges, Deserts, Cloud Shadows & City Lights
+            if(type == 1) {
                 float continents = fbm(pos * 2.3 + vec3(seed * 0.1));
                 float lat = abs(pos.y);
                 float cloudTime = time * 0.02;
 
-                // Cloud shadow projection onto terrain
                 vec3 shadowPos = pos - L * 0.02;
                 float shadowNoise = fbm(shadowPos * 4.2 + vec3(cloudTime, 0.0, cloudTime * 0.35));
                 if(shadowNoise > 0.38) cloudShadow = 0.35;
 
                 if(continents < 0.035) {
                     float shelf = smoothstep(-0.35, 0.035, continents);
-                    color = mix(vec3(0.02, 0.12, 0.45), vec3(0.06, 0.55, 0.68), shelf);
+                    color = mix(cWater * 0.45, cWater * 1.35, shelf);
                     isWater = 1.0;
                 } else {
                     float desertNoise = snoise(pos * 6.0);
                     float isDesert = smoothstep(0.12, 0.42, lat) * (1.0 - smoothstep(0.52, 0.68, lat)) * smoothstep(-0.15, 0.35, desertNoise);
-                    vec3 vegColor = mix(vec3(0.12, 0.52, 0.18), vec3(0.28, 0.68, 0.25), snoise(pos * 12.0) * 0.5 + 0.5);
-                    vec3 desertColor = vec3(0.85, 0.68, 0.38);
+                    vec3 vegColor = mix(cLand * 0.78, cLand * 1.18, snoise(pos * 12.0) * 0.5 + 0.5);
+                    vec3 desertColor = mix(vec3(0.85, 0.68, 0.38), cMountain, 0.25);
                     color = mix(vegColor, desertColor, isDesert);
 
-                    // Jagged mountain ridges
                     float ridge = 1.0 - abs(snoise(pos * 8.0));
                     if(continents > 0.35 && ridge > 0.65) {
-                        color = mix(color, vec3(0.58, 0.50, 0.42), smoothstep(0.65, 0.85, ridge));
-                        if(ridge > 0.82 || lat > 0.65) color = vec3(0.98, 0.98, 1.0);
+                        color = mix(color, cMountain, smoothstep(0.65, 0.85, ridge));
+                        if(ridge > 0.82 || lat > 0.65) color = cIce;
                     }
 
                     if(lat > 0.80) {
-                        color = vec3(0.96, 0.98, 1.0);
+                        color = cIce;
                         isWater = 0.0;
                     }
 
-                    // Night-side urban clusters
                     if(isDesert < 0.65 && lat < 0.68) {
                         float cityCluster = snoise(pos * 36.0);
                         if(cityCluster > 0.46) nightGlow = smoothstep(0.46, 0.82, cityCluster) * 2.0;
                     }
                 }
 
-                // Swirling cloud canopy
                 float clouds = fbm(pos * 4.2 + vec3(cloudTime, 0.0, cloudTime * 0.35));
                 if(clouds > 0.35) {
                     float cloudDensity = smoothstep(0.35, 0.68, clouds);
@@ -656,49 +755,40 @@
                     isWater *= (1.0 - cloudDensity);
                 }
             }
-            else if(type == 2) { // Mars: Valles Marineris Canyon, Olympus Mons & Ochre Deserts
+            else if(type == 2) {
                 float h = fbm(pos * 3.8 + vec3(seed));
-                vec3 brightDesert = vec3(0.94, 0.48, 0.24);
-                vec3 darkBasalt = vec3(0.32, 0.16, 0.10);
-                color = mix(darkBasalt, brightDesert, smoothstep(-0.2, 0.4, h));
+                color = mix(cMountain, cLand, smoothstep(-0.2, 0.4, h));
 
-                // Valles Marineris Rift
                 float canyonAxis = abs(pos.y + 0.06 + snoise(pos * 6.0) * 0.035);
                 float canyonLong = smoothstep(-0.4, 0.4, pos.x);
                 if(canyonAxis < 0.05 && canyonLong > 0.1) {
                     float canyonDepth = smoothstep(0.05, 0.0, canyonAxis);
-                    color = mix(color, vec3(0.18, 0.07, 0.03), canyonDepth * 0.85);
+                    color = mix(color, cMountain * 0.55, canyonDepth * 0.85);
                 }
 
-                // Olympus Mons
                 vec3 monsPos = normalize(vec3(0.52, 0.32, 0.76));
                 float distMons = distance(pos, monsPos);
                 if(distMons < 0.22) {
                     float caldera = smoothstep(0.22, 0.0, distMons);
-                    color = mix(color, vec3(0.25, 0.10, 0.05), caldera * 0.8);
+                    color = mix(color, cMountain * 0.7, caldera * 0.8);
                 }
 
-                // Spiral Polar Caps
                 float polarDist = abs(pos.y);
                 if(polarDist > 0.85) {
                     float spiral = sin(atan(pos.z, pos.x) * 3.0 + polarDist * 20.0);
-                    color = mix(color, vec3(0.98, 0.98, 1.0), smoothstep(0.85, 0.92, polarDist) * (0.8 + spiral * 0.2));
+                    color = mix(color, cIce, smoothstep(0.85, 0.92, polarDist) * (0.8 + spiral * 0.2));
                 }
             }
-            else if(type == 3) { // Jupiter: Zonal Counter-Flows & Great Red Spot
+            else if(type == 3) {
                 float lat = pos.y * 18.0;
                 float dir = mod(floor(lat), 2.0) == 0.0 ? 1.0 : -1.0;
                 float bandFlow = pos.x * 3.5 + dir * time * 0.03;
                 float turbulence = snoise(vec3(bandFlow, pos.y * 12.0, pos.z * 3.0)) * 0.32;
                 float wave = sin(lat + turbulence);
 
-                vec3 belt = vec3(0.76, 0.40, 0.20);
-                vec3 zone = vec3(0.96, 0.90, 0.82);
-                vec3 subBelt = vec3(0.88, 0.58, 0.32);
-                color = mix(belt, zone, smoothstep(-0.4, 0.4, wave));
-                color = mix(color, subBelt, snoise(pos * 16.0) * 0.25);
+                color = mix(cWater, cLand, smoothstep(-0.4, 0.4, wave));
+                color = mix(color, cMountain, snoise(pos * 16.0) * 0.25);
 
-                // Great Red Spot
                 vec3 spotCenter = normalize(vec3(0.55, -0.36, 0.75));
                 float spotDist = distance(pos, spotCenter);
                 if(spotDist < 0.24) {
@@ -707,42 +797,38 @@
                     color = mix(color, vec3(0.96, 0.26, 0.10), vortex * (0.88 + swirl * 0.12));
                 }
             }
-            else if(type == 4) { // Moon / Mercury: Highlands, Maria & Ray Craters
+            else if(type == 4) {
                 float h = fbm(pos * 9.0);
                 float maria = snoise(pos * 2.8 + vec3(seed));
-                vec3 highland = vec3(0.84, 0.83, 0.82);
-                vec3 darkBasalt = vec3(0.42, 0.41, 0.40);
-                color = mix(darkBasalt, highland, smoothstep(-0.1, 0.35, maria));
+                color = mix(cMountain, cLand, smoothstep(-0.1, 0.35, maria));
 
                 float crater = snoise(pos * 32.0);
-                if(crater > 0.62) color = mix(color, vec3(0.98, 0.98, 1.0), 0.65);
+                if(crater > 0.62) color = mix(color, cIce, 0.65);
                 color *= (0.85 + 0.2 * h);
             }
-            else if(type == 5) { // Venus: Luminous Sulfur Cloud Deck
+            else if(type == 5) {
                 float vTime = time * 0.08;
                 float cloudWave = fbm(pos * 3.4 + vec3(vTime, 0.0, vTime * 0.3));
-                color = mix(vec3(0.98, 0.89, 0.64), vec3(0.92, 0.76, 0.44), cloudWave);
+                color = mix(cLand, cMountain, cloudWave);
             }
-            else if(type == 6) { // Europa: Ice Crust & Reddish Fractures
-                color = vec3(0.96, 0.98, 1.0);
+            else if(type == 6) {
+                color = cLand;
                 float cracks = abs(snoise(pos * 30.0));
                 if(cracks < 0.12) {
                     float crackIntensity = smoothstep(0.12, 0.0, cracks);
                     color = mix(color, vec3(0.70, 0.32, 0.18), crackIntensity * 0.9);
                 }
             }
-            else if(type == 7) { // Io: Volcanism & Calderas
+            else if(type == 7) {
                 float sulfur = fbm(pos * 5.0 + vec3(seed));
                 color = mix(vec3(0.98, 0.92, 0.22), vec3(0.96, 0.50, 0.12), sulfur);
                 float vent = snoise(pos * 24.0);
                 if(vent > 0.56) color = vec3(0.14, 0.07, 0.03);
             }
-            else if(type == 8) { // Saturn: Banding & Hexagon
+            else if(type == 8) {
                 float lat = pos.y * 22.0;
                 float bands = sin(lat + snoise(vec3(pos.x * 2.0, lat, pos.z)) * 0.2);
-                vec3 saturnCream = vec3(0.96, 0.88, 0.70);
-                vec3 saturnOchre = vec3(0.86, 0.72, 0.50);
-                color = mix(saturnOchre, saturnCream, smoothstep(-0.5, 0.5, bands));
+                color = mix(cMountain, cLand, smoothstep(-0.5, 0.5, bands));
 
                 if(pos.y > 0.92) {
                     float hexAngle = atan(pos.z, pos.x);
@@ -750,39 +836,35 @@
                     if(pos.y > 0.94 + hex) color = vec3(0.45, 0.55, 0.50);
                 }
             }
-            else if(type == 9) { // Uranus: Aquamarine Cyan
+            else if(type == 9) {
                 float lat = pos.y * 6.0;
-                color = mix(vec3(0.55, 0.90, 0.92), vec3(0.70, 0.95, 0.97), sin(lat) * 0.2 + 0.5);
+                color = mix(cWater, cLand, sin(lat) * 0.2 + 0.5);
             }
-            else if(type == 10) { // Neptune: Cobalt Azure
+            else if(type == 10) {
                 float lat = pos.y * 14.0;
                 float neptuneFlow = pos.x * 4.0 + time * 0.04;
                 float turbulence = snoise(vec3(neptuneFlow, pos.y * 8.0, pos.z * 3.0)) * 0.3;
-                vec3 deepAzure = vec3(0.16, 0.38, 0.96);
-                vec3 brightCobalt = vec3(0.28, 0.58, 1.0);
-                color = mix(deepAzure, brightCobalt, sin(lat + turbulence) * 0.5 + 0.5);
+                color = mix(cWater, cLand, sin(lat + turbulence) * 0.5 + 0.5);
                 float cirrus = snoise(pos * 18.0 + vec3(time * 0.05));
                 if(cirrus > 0.62) color = mix(color, vec3(1.0), 0.85);
             }
-            else if(type == 11) { // Titan: Orange Photochemical Smog
-                color = vec3(0.98, 0.64, 0.18);
+            else if(type == 11) {
+                color = cLand;
             }
-            else if(type == 12) { // Pluto: Tombaugh Regio Heart & Tholins
+            else if(type == 12) {
                 float h = fbm(pos * 6.0 + vec3(seed));
-                vec3 tholinDark = vec3(0.35, 0.18, 0.10);
-                vec3 upland = vec3(0.78, 0.64, 0.52);
-                color = mix(tholinDark, upland, smoothstep(-0.2, 0.3, h));
+                color = mix(cMountain, cLand, smoothstep(-0.2, 0.3, h));
 
                 vec3 heartPos = normalize(vec3(0.35, -0.05, 0.90));
                 float heartDist = distance(pos, heartPos);
                 if(heartDist < 0.38) {
                     float heartMask = smoothstep(0.38, 0.0, heartDist);
-                    color = mix(color, vec3(0.96, 0.94, 0.90), heartMask * 0.92);
+                    color = mix(color, cIce, heartMask * 0.92);
                 }
             }
-            else if(type == 13) { // Ceres: Crust with Occator Faculae
+            else if(type == 13) {
                 float h = fbm(pos * 8.0);
-                color = vec3(0.48, 0.47, 0.46) * (0.8 + 0.3 * h);
+                color = cLand * (0.8 + 0.3 * h);
                 vec3 occatorPos = normalize(vec3(0.2, 0.4, 0.88));
                 if(distance(pos, occatorPos) < 0.08) color = vec3(1.0, 1.0, 0.95);
             }
@@ -836,6 +918,36 @@
         }
     `;
 
+    // --- RELATIVISTIC SINGULARITY & KERR ACCRETION DISK SHADERS ---
+    const SINGULARITY_FRAG = `
+        varying vec3 vPosition;
+        varying vec2 vUv;
+        #include <common>
+        #include <logdepthbuf_pars_fragment>
+        ${NOISE_GLSL}
+        uniform float time;
+        uniform vec3 colorInner;
+        uniform vec3 colorOuter;
+        uniform float collapseFactor;
+        void main() {
+            #include <logdepthbuf_fragment>
+            vec2 p = vUv * 2.0 - 1.0;
+            float r = length(p);
+            if (r > 1.0 || r < 0.22) discard;
+
+            float angle = atan(p.y, p.x);
+            float spiral = sin(angle * 4.0 + log(max(0.01, r)) * 12.0 - time * 5.0);
+            float turb = snoise(vec3(p * 4.5, time * 1.2));
+            float ring = smoothstep(0.22, 0.38, r) * (1.0 - smoothstep(0.65, 1.0, r));
+            float intensity = ring * (0.65 + 0.35 * spiral + 0.25 * turb) * collapseFactor;
+
+            // Relativistic Doppler beaming (approaching left side brighter)
+            float doppler = 1.0 + 0.38 * (-p.x / max(0.15, r));
+            vec3 col = mix(colorOuter, colorInner, smoothstep(0.95, 0.26, r)) * doppler;
+            gl_FragColor = vec4(col * (1.35 + intensity), clamp(intensity * 1.45, 0.0, 0.96));
+        }
+    `;
+
     // --- ACCURATE PLANETARY RING SHADER WITH PLANETARY SHADOW PROJECTION ---
     const RING_VERT = `
         varying vec3 vLocalPos;
@@ -871,15 +983,12 @@
 
             float normR = (r - innerRadius) / (outerRadius - innerRadius);
 
-            // Cassini Division gap
             if(normR > 0.48 && normR < 0.54) discard;
-            // Encke Division slit
             if(normR > 0.86 && normR < 0.88) discard;
 
             float band = sin(normR * 140.0) * 0.12;
             vec3 col = mix(innerColor, ringColor, normR) + band;
 
-            // Accurate Planetary Shadow Cast on Rings
             vec3 toRing = vWorldPos - sunPosition;
             vec3 toPlanet = planetCenter - sunPosition;
             vec3 sunDir = normalize(toPlanet);
@@ -918,7 +1027,6 @@
                 if (!AudioCtx) return;
                 this.ctx = new AudioCtx();
 
-                // Low harmonic ambient drone
                 const osc1 = this.ctx.createOscillator();
                 const osc2 = this.ctx.createOscillator();
                 const droneFilter = this.ctx.createBiquadFilter();
@@ -942,7 +1050,6 @@
                 osc2.start();
                 this.ambientDrone = droneGain;
 
-                // Sub-Bass rumble generator
                 const bufferSize = this.ctx.sampleRate * 2;
                 const noiseBuffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
                 const output = noiseBuffer.getChannelData(0);
@@ -976,10 +1083,10 @@
             }
         }
 
-        updateRumble(speedFraction, isWarp) {
+        updateRumble(speedFraction, isBoost) {
             if (!this.ctx || this.isMuted || !this.rumbleGain) return;
-            const targetGain = isWarp ? 0.28 : Math.max(0.015, speedFraction * 0.14);
-            const targetFreq = isWarp ? 140 : 55 + speedFraction * 80;
+            const targetGain = isBoost ? 0.22 : Math.max(0.015, speedFraction * 0.14);
+            const targetFreq = isBoost ? 125 : 55 + speedFraction * 75;
             this.rumbleGain.gain.setTargetAtTime(targetGain, this.ctx.currentTime, 0.1);
             this.rumbleFilter.frequency.setTargetAtTime(targetFreq, this.ctx.currentTime, 0.1);
         }
@@ -988,6 +1095,25 @@
             if (!this.ctx || this.isMuted || !this.rumbleGain) return;
             this.rumbleGain.gain.setTargetAtTime(intensity * 0.45, this.ctx.currentTime, 0.08);
             this.rumbleFilter.frequency.setTargetAtTime(100 + intensity * 350, this.ctx.currentTime, 0.08);
+        }
+
+        playSingularitySwell() {
+            if (!this.ctx || this.isMuted) return;
+            const freqs = [110, 164.81, 220, 329.63, 440];
+            freqs.forEach((f, idx) => {
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = idx % 2 === 0 ? 'sine' : 'triangle';
+                osc.frequency.setValueAtTime(f * 0.5, this.ctx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(f * 1.5, this.ctx.currentTime + 2.2);
+                gain.gain.setValueAtTime(0.001, this.ctx.currentTime);
+                gain.gain.linearRampToValueAtTime(0.09, this.ctx.currentTime + 1.0);
+                gain.gain.exponentialRampToValueAtTime(0.0001, this.ctx.currentTime + 3.0);
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.start();
+                osc.stop(this.ctx.currentTime + 3.1);
+            });
         }
 
         playChime() {
@@ -1036,12 +1162,26 @@
         "GANYMEDE": { class: "Magnetized Galilean Moon", atm: "Trace O₂ / O₃", press: "10⁻¹¹ bar", temp: "-163 °C", grav: "0.146 g", comp: "Silicate, High-pressure Ice", rad: "0.80 mSv/hr" },
         "CALLISTO": { class: "Cratered Galilean Moon", atm: "Trace CO₂", press: "10⁻¹¹ bar", temp: "-170 °C", grav: "0.126 g", comp: "Equal Ice / Silicate Mix", rad: "0.10 mSv/hr" },
         "SATURN": { class: "Gas Giant Ringed", atm: "H₂ 96.3%, He 3.25%", press: "> 1,000 bar", temp: "-140 °C", grav: "1.06 g", comp: "Liquid Hydrogen, H₂O Ice Rings", rad: "0.85 mSv/hr" },
-        "TITAN": { class: "Hydrocarbon Ocean World", atm: "N₂ 95.0%, CH₄ 4.9%, H₂", press: "1.45 bar", temp: "-179 °C", grav: "0.138 g", comp: "Liquid CH₄/C₂H₆, Water-Ice Rock", rad: "0.02 mSv/hr" },
+        "MIMAS": { class: "Inner Ice Moon", atm: "Vacuum", press: "0.00 bar", temp: "-209 °C", grav: "0.006 g", comp: "Water Ice, Herschel Crater Basin", rad: "0.18 mSv/hr" },
         "ENCELADUS": { class: "Cryovolcanic Moon", atm: "H₂O Vapor, N₂, CO₂", press: "Trace Geysers", temp: "-198 °C", grav: "0.011 g", comp: "Water-Ice Shell, Saline Ocean", rad: "0.15 mSv/hr" },
+        "TETHYS": { class: "Mid-Sized Ice Moon", atm: "Vacuum", press: "0.00 bar", temp: "-187 °C", grav: "0.015 g", comp: "Pure Crystalline Water Ice", rad: "0.14 mSv/hr" },
+        "DIONE": { class: "Dense Ice-Silicate Moon", atm: "Trace O₂ Ions", press: "< 10⁻¹² bar", temp: "-186 °C", grav: "0.024 g", comp: "Water Ice, Silicate Core", rad: "0.12 mSv/hr" },
+        "RHEA": { class: "Cratered Ice Moon", atm: "Trace O₂ / CO₂", press: "< 10⁻¹² bar", temp: "-197 °C", grav: "0.027 g", comp: "Water Ice, Rock Mixture", rad: "0.10 mSv/hr" },
+        "TITAN": { class: "Hydrocarbon Ocean World", atm: "N₂ 95.0%, CH₄ 4.9%, H₂", press: "1.45 bar", temp: "-179 °C", grav: "0.138 g", comp: "Liquid CH₄/C₂H₆, Water-Ice Rock", rad: "0.02 mSv/hr" },
+        "IAPETUS": { class: "Two-Tone Ridge Moon", atm: "Vacuum", press: "0.00 bar", temp: "-163 °C", grav: "0.023 g", comp: "Water Ice, Carbonaceous Tholins", rad: "0.06 mSv/hr" },
         "URANUS": { class: "Ice Giant", atm: "H₂ 82.5%, He 15.2%, CH₄ 2.3%", press: "> 100 bar", temp: "-195 °C", grav: "0.89 g", comp: "H₂O, NH₃, CH₄ Ices & Mantle", rad: "0.12 mSv/hr" },
+        "MIRANDA": { class: "Tectonic Ice Moon", atm: "Vacuum", press: "0.00 bar", temp: "-213 °C", grav: "0.008 g", comp: "Fractured Water Ice, Silicates", rad: "0.16 mSv/hr" },
+        "ARIEL": { class: "Bright Ice Moon", atm: "Vacuum", press: "0.00 bar", temp: "-213 °C", grav: "0.027 g", comp: "Water Ice, Dry CO₂ Ice", rad: "0.14 mSv/hr" },
+        "UMBRIEL": { class: "Dark Carbonaceous Moon", atm: "Vacuum", press: "0.00 bar", temp: "-198 °C", grav: "0.023 g", comp: "Dark Ice, Organic Compounds", rad: "0.12 mSv/hr" },
+        "TITANIA": { class: "Major Uranian Moon", atm: "Trace CO₂", press: "< 10⁻¹³ bar", temp: "-203 °C", grav: "0.039 g", comp: "Equal Ice & Silicate Rock", rad: "0.10 mSv/hr" },
+        "OBERON": { class: "Outer Uranian Moon", atm: "Vacuum", press: "0.00 bar", temp: "-198 °C", grav: "0.035 g", comp: "Ice, Dark Reddish Regolith", rad: "0.09 mSv/hr" },
         "NEPTUNE": { class: "Ice Giant Azure", atm: "H₂ 80.0%, He 19.0%, CH₄ 1.5%", press: "> 100 bar", temp: "-201 °C", grav: "1.14 g", comp: "Supercritical Water-Ammonia Mantle", rad: "0.14 mSv/hr" },
+        "PROTEUS": { class: "Irregular Inner Moon", atm: "Vacuum", press: "0.00 bar", temp: "-222 °C", grav: "0.007 g", comp: "Dark Soot-Coated Water Ice", rad: "0.15 mSv/hr" },
         "TRITON": { class: "Retrograde Kuiper Moon", atm: "N₂ 99%, CH₄ trace", press: "0.000014 bar", temp: "-235 °C", grav: "0.079 g", comp: "Nitrogen Frost, Water-Ice Mantle", rad: "0.08 mSv/hr" },
-        "PLUTO": { class: "Trans-Neptunian Dwarf", atm: "N₂ 99%, CH₄, CO", press: "0.00001 bar", temp: "-230 °C", grav: "0.063 g", comp: "Nitrogen Glacier, Water-Ice Peaks", rad: "0.04 mSv/hr" }
+        "NEREID": { class: "Eccentric Outer Moon", atm: "Vacuum", press: "0.00 bar", temp: "-223 °C", grav: "0.007 g", comp: "Water Ice, Silicate Regolith", rad: "0.08 mSv/hr" },
+        "PLUTO": { class: "Trans-Neptunian Dwarf", atm: "N₂ 99%, CH₄, CO", press: "0.00001 bar", temp: "-230 °C", grav: "0.063 g", comp: "Nitrogen Glacier, Water-Ice Peaks", rad: "0.04 mSv/hr" },
+        "CHARON": { class: "Binary Dwarf Companion", atm: "Vacuum", press: "0.00 bar", temp: "-220 °C", grav: "0.029 g", comp: "Crystalline Water Ice, Ammonia", rad: "0.04 mSv/hr" },
+        "SAGITTARIUS A*": { class: "Supermassive Kerr Black Hole", atm: "Relativistic Accretion Plasma", press: "10¹⁴ bar (Photon Ring)", temp: "> 10¹⁰ K (Ion Torus)", grav: "4.15 × 10⁶ M☉", comp: "Spinning Spacetime Singularity", rad: "INFINITE (EVENT HORIZON)" }
     };
 
     // --- LANDMARK REPOSITORY ---
@@ -1057,20 +1197,97 @@
         "Pluto": { name: "New Horizons Relay Monument", x: -180, z: 190, desc: "Tombaugh Regio Transceiver" }
     };
 
+    // --- SOL SYSTEM PRECURSOR RELIC REGISTRY (16 CORE RELICS + BONUS MOONS) ---
+    const SOL_RELIC_TEMPLATE = {
+        "Mercury": { name: "Hermian Solar Prism", x: -210, z: 140, color: 0xffcc66 },
+        "Venus": { name: "Sulfur Crown Astrolabe", x: 195, z: -210, color: 0xffe066 },
+        "Earth": { name: "Terran Origin Cipher", x: -240, z: -190, color: 0x00ff88 },
+        "Moon": { name: "Selene Lunar Resonator", x: 175, z: -145, color: 0xddeeff },
+        "Mars": { name: "Ares Cydonia Key", x: -230, z: 165, color: 0xff6633 },
+        "Phobos": { name: "Phobos Stickney Shard", x: 95, z: -110, color: 0xaa9988 },
+        "Deimos": { name: "Deimos Void Beacon", x: -110, z: 85, color: 0xbbaa99 },
+        "Ceres": { name: "Cererean Salt Obelisk", x: -165, z: -175, color: 0x99ddff },
+        "Jupiter": { name: "Jovian Storm Gyroscope", x: 245, z: 190, color: 0xffaa44 },
+        "Io": { name: "Ionian Magma Core", x: -185, z: 210, color: 0xffee22 },
+        "Europa": { name: "Europan Abyssal Lens", x: 225, z: -195, color: 0x66e5ff },
+        "Ganymede": { name: "Ganymede Magneto-Seal", x: -200, z: -220, color: 0x88ccff },
+        "Callisto": { name: "Valhalla Basin Relic", x: 210, z: 230, color: 0xccbbaa },
+        "Saturn": { name: "Kronos Ring Harmonic", x: -250, z: 185, color: 0xffdd88 },
+        "Mimas": { name: "Herschel Impact Matrix", x: 120, z: 130, color: 0xddeeff },
+        "Enceladus": { name: "Tiger-Stripe Cryo-Seed", x: -175, z: -160, color: 0x88ffff },
+        "Tethys": { name: "Ithaca Chasma Shard", x: 145, z: -120, color: 0xeef8ff },
+        "Dione": { name: "Dione Ice-Cliff Node", x: -135, z: 155, color: 0xddeeff },
+        "Rhea": { name: "Rhea Ancient Dial", x: 160, z: 140, color: 0xccddee },
+        "Titan": { name: "Titanian Hydrocarbon Core", x: -235, z: 215, color: 0xff9911 },
+        "Iapetus": { name: "Equatorial Ridge Key", x: 150, z: -170, color: 0xddbb99 },
+        "Uranus": { name: "Ouranos Axial Compass", x: 220, z: -240, color: 0x55eeff },
+        "Miranda": { name: "Verona Rupes Crystal", x: -130, z: -140, color: 0xaaddff },
+        "Ariel": { name: "Ariel Rift Prism", x: 135, z: 125, color: 0xbbeeff },
+        "Umbriel": { name: "Wunda Dark Ring Seal", x: -145, z: 135, color: 0x8899bb },
+        "Titania": { name: "Titania Chasm Relic", x: 185, z: -180, color: 0x99ccff },
+        "Oberon": { name: "Oberon Hamlet Spire", x: -175, z: 170, color: 0xaa99aa },
+        "Neptune": { name: "Poseidon Trident Matrix", x: -240, z: -210, color: 0x3377ff },
+        "Proteus": { name: "Proteus Pharos Stone", x: 115, z: -115, color: 0x8899aa },
+        "Triton": { name: "Triton Cantaloupe Glyph", x: 195, z: 215, color: 0xffbbee },
+        "Nereid": { name: "Nereid Eccentric Arc", x: -125, z: -120, color: 0x99aacc },
+        "Pluto": { name: "Hades Tombaugh Heart", x: 215, z: -195, color: 0xffccaa },
+        "Charon": { name: "Charon Mordor Macula Key", x: -155, z: 150, color: 0xbbbbcc }
+    };
+
+    const SOL_CORE_LIST = [
+        "Mercury", "Venus", "Earth", "Moon", "Mars", "Ceres",
+        "Jupiter", "Io", "Europa", "Ganymede", "Callisto",
+        "Saturn", "Enceladus", "Titan", "Uranus", "Neptune", "Triton", "Pluto"
+    ];
+
+    let RELIC_REGISTRY = {};
+    const CORE_RELIC_SET = new Set();
+    const collectedRelics = new Set();
+
     // --- GLOBALS ---
     let scene, camera, renderer;
     let surfaceScene = null, surfaceCamera = null;
+    let coreScene = null, coreCamera = null;
     let planets = [];
     let sunLight;
     let clock = new THREE.Clock();
     let starMesh, sunSprite;
     let earthRef = null;
     let targetIndex = -1;
-    let gameState = 'SPACE';
+    let gameState = 'SPACE'; // 'CUTSCENE', 'SPACE', 'REENTRY', 'SURFACE', 'TAKEOFF', 'GALACTIC_CORE'
     let currentPlanet = null;
+    let currentSystemName = "SOL SYSTEM";
+    let isSolSystem = true;
+    let systemGenerationCount = 0;
 
     let asteroidBeltMesh = null;
     let kuiperBeltMesh = null;
+    let cometGroup = null;
+    let galacticPlaneMesh = null;
+    let singularityGroup = null;
+    let singularityUnlocked = false;
+    let singularityCollapsing = false;
+    let singularityCollapseScale = 1.0;
+
+    // Galactic Core rotating Kerr black hole objects
+    let blackHoleGroup = null;
+    let accretionDiskMesh = null;
+    let innerPhotonRing = null;
+    let coreStarField = null;
+    let coreSStars = [];
+    let coreTransitionTriggered = false;
+
+    // Opening Cutscene state
+    const cutscene = {
+        active: false,
+        phase: 'CORE_DIVE', // 'CORE_DIVE' -> 'SOL_EMERGE'
+        timer: 0,
+        diveDuration: 2.8,
+        emergeDuration: 2.6,
+        startPos: new THREE.Vector3(),
+        endPos: new THREE.Vector3(),
+        lookTarget: new THREE.Vector3()
+    };
 
     let surfaceMesh = null;
     let surfaceSun = null;
@@ -1084,12 +1301,26 @@
     let nextLightningTime = 2.0;
     let currentLandmark = null;
     let landmarkDiscovered = false;
+    let currentRelicObj = null;
+    let currentRelicMesh = null;
+    let prevRelicDist = null;
+
+    // Exact heightfield cache for zero-clipping barycentric triangle collision
+    let terrainHeightGrid = null;
+    let terrainVertsPerSide = TERRAIN_SEGS + 1;
 
     let cockpitVisible = true;
     let sciencePanelOpen = false;
 
+    // Roll-locked Euler orientation state
+    let shipYaw = 0;
+    let shipPitch = 0;
     let camYaw = 0;
     let camPitch = 0;
+    let levelTargetActive = false;
+
+    // Debug code buffer ("godmode")
+    let cheatKeyBuffer = "";
 
     const autopilot = {
         active: false, timer: 0, duration: 3.2,
@@ -1097,17 +1328,19 @@
         targetObj: null, targetPos: new THREE.Vector3()
     };
 
-    const input = { forward: 0, right: 0, warp: false, lookX: 0, lookY: 0 };
+    const input = { forward: 0, right: 0, warp: false, lookX: 0, lookY: 0, keyLookX: 0, keyLookY: 0 };
     const ship = { speed: 0, currentMaxSpeed: 120, baseSpeed: 120, warpSpeed: 380000 };
-    const walker = { height: 2.2, speed: 12.0 };
+    const walker = { height: 2.4, speed: 12.0, radius: 1.4 };
 
     let joystickActive = false;
     let joystickOrigin = { x: 0, y: 0 };
-    let touchLookActive = false;
+    let lookTouchId = null;
     let lastTouchX = 0, lastTouchY = 0;
+    let mouseDragging = false;
 
     const log = (msg) => {
         const area = document.getElementById('log-area');
+        if (!area) return;
         const div = document.createElement('div');
         div.className = 'log-entry';
         div.innerText = `> ${msg}`;
@@ -1116,6 +1349,33 @@
     };
 
     const rand = (min, max) => Math.random() * (max - min) + min;
+
+    function syncShipAnglesFromCamera(camObj) {
+        _EULER.setFromQuaternion(camObj.quaternion, 'YXZ');
+        shipYaw = _EULER.y;
+        shipPitch = Math.max(-Math.PI * 0.47, Math.min(Math.PI * 0.47, _EULER.x));
+        _EULER.set(shipPitch, shipYaw, 0, 'YXZ');
+        camObj.quaternion.setFromEuler(_EULER);
+        updateHorizonReadout(shipPitch);
+    }
+
+    function updateHorizonReadout(pitchRad) {
+        const el = document.getElementById('horizon-readout');
+        if (!el) return;
+        const deg = Math.round(THREE.MathUtils.radToDeg(pitchRad));
+        if (Math.abs(deg) <= 1) {
+            el.innerText = 'HORIZON 0°';
+            el.style.color = 'rgba(0, 255, 102, 0.85)';
+        } else {
+            el.innerText = `PITCH ${deg > 0 ? '+' : ''}${deg}°`;
+            el.style.color = 'rgba(0, 229, 255, 0.9)';
+        }
+    }
+
+    function levelHorizon() {
+        levelTargetActive = true;
+        log("GYRO HORIZON LEVELING ENGAGED");
+    }
 
     // --- MEMORY PURGE ROUTINE ---
     function disposeHierarchy(node) {
@@ -1151,7 +1411,18 @@
             return;
         }
 
-        renderer = new THREE.WebGLRenderer({ antialias: false, logarithmicDepthBuffer: true, powerPreference: "high-performance" });
+        const rendererParams = {
+            antialias: false,
+            logarithmicDepthBuffer: true,
+            powerPreference: "high-performance"
+        };
+
+        try {
+            renderer = new THREE.WebGLRenderer(rendererParams);
+        } catch (err) {
+            renderer = new THREE.WebGLRenderer({ antialias: false });
+        }
+
         renderer.setSize(RENDER_WIDTH, RENDER_HEIGHT, false);
         renderer.setPixelRatio(1);
 
@@ -1168,19 +1439,25 @@
         scene.add(new THREE.AmbientLight(0x4a5d78, 0.9));
 
         createStarfield();
-        createSolarSystem();
+        createGalacticPlane();
+        loadSolSystem();
+        buildGalacticCoreScene();
 
-        surfaceCamera = new THREE.PerspectiveCamera(60, RENDER_WIDTH / RENDER_HEIGHT, 0.1, 30000);
+        surfaceCamera = new THREE.PerspectiveCamera(60, RENDER_WIDTH / RENDER_HEIGHT, 0.08, 30000);
+        coreCamera = new THREE.PerspectiveCamera(62, RENDER_WIDTH / RENDER_HEIGHT, 0.5, 4000000);
 
         if (earthRef) {
-            camera.position.set(earthRef.group.position.x + earthRef.data.r * 4.5, earthRef.data.r * 1.5, earthRef.group.position.z + earthRef.data.r * 4.5);
-            camera.lookAt(earthRef.group.position);
-            log("FLIGHT DECK READY. ORBIT: EARTH");
+            earthRef.mesh.getWorldPosition(_TARGET_WORLD_POS);
+            const r = earthRef.data.r;
+            camera.position.set(_TARGET_WORLD_POS.x + r * 4.5, r * 1.4, _TARGET_WORLD_POS.z + r * 4.5);
+            camera.lookAt(_TARGET_WORLD_POS);
+            syncShipAnglesFromCamera(camera);
         }
 
         window.addEventListener('resize', onResize);
         setupInputs();
         setupPointerLock();
+        updateRelicHUD();
 
         onResize();
         animate();
@@ -1189,20 +1466,92 @@
     function createStarfield() {
         const geometry = new THREE.BufferGeometry();
         const vertices = [];
+        const colors = [];
         const radius = 15000000;
-        for (let i = 0; i < 900; i++) {
+        const starTints = [0xddeeff, 0xffffff, 0xfff2dd, 0xbbddff, 0xffddbb];
+        const tmpCol = new THREE.Color();
+
+        for (let i = 0; i < 1400; i++) {
             const r = rand(radius * 0.8, radius * 1.4);
             const theta = rand(0, Math.PI * 2);
             const phi = Math.acos(rand(-1, 1));
             vertices.push(r * Math.sin(phi) * Math.cos(theta), r * Math.sin(phi) * Math.sin(theta), r * Math.cos(phi));
+            tmpCol.setHex(starTints[i % starTints.length]);
+            colors.push(tmpCol.r, tmpCol.g, tmpCol.b);
         }
         geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
-        const material = new THREE.PointsMaterial({ color: 0xddffff, size: 1, sizeAttenuation: false, depthWrite: false });
+        geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
+        const material = new THREE.PointsMaterial({ vertexColors: true, size: 1, sizeAttenuation: false, depthWrite: false });
         scene.add(new THREE.Points(geometry, material));
     }
 
-    // --- ACCURATE SOLAR SYSTEM WITH INCLINATIONS & DETAILED MOON SYSTEMS ---
-    function createSolarSystem() {
+    function createGalacticPlane() {
+        const geometry = new THREE.BufferGeometry();
+        const vertices = [];
+        const colors = [];
+        const radius = 14000000;
+        const cCore = new THREE.Color(0x99bbff);
+        const cDust = new THREE.Color(0xffcc99);
+        const cRim = new THREE.Color(0x5577aa);
+
+        for (let i = 0; i < 2600; i++) {
+            const angle = rand(0, Math.PI * 2);
+            const spread = (Math.random() - 0.5) * (Math.random() - 0.5) * 0.32;
+            const x = Math.cos(angle) * Math.cos(spread) * radius;
+            const y = Math.sin(spread) * radius;
+            const z = Math.sin(angle) * Math.cos(spread) * radius;
+            vertices.push(x, y, z);
+
+            const col = (Math.abs(spread) < 0.04) ? cDust : (Math.random() > 0.4 ? cCore : cRim);
+            const b = rand(0.45, 1.0);
+            colors.push(col.r * b, col.g * b, col.b * b);
+        }
+        geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
+        geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
+        const mat = new THREE.PointsMaterial({ vertexColors: true, size: 1, sizeAttenuation: false, depthWrite: false });
+        galacticPlaneMesh = new THREE.Points(geometry, mat);
+        galacticPlaneMesh.rotation.set(0.45, 0.2, 1.05);
+        scene.add(galacticPlaneMesh);
+    }
+
+    function clearCurrentStarSystem() {
+        for (let i = planets.length - 1; i >= 0; i--) {
+            if (planets[i].group && !planets[i].isMoon) {
+                disposeHierarchy(planets[i].group);
+            }
+        }
+        planets = [];
+        earthRef = null;
+        targetIndex = -1;
+        document.getElementById('tgt-disp').innerText = "NONE";
+        document.getElementById('btn-jump').style.display = 'none';
+
+        if (starMesh) { disposeHierarchy(starMesh); starMesh = null; }
+        if (sunSprite) { disposeHierarchy(sunSprite); sunSprite = null; }
+        if (asteroidBeltMesh) { disposeHierarchy(asteroidBeltMesh); asteroidBeltMesh = null; }
+        if (kuiperBeltMesh) { disposeHierarchy(kuiperBeltMesh); kuiperBeltMesh = null; }
+        if (cometGroup) { disposeHierarchy(cometGroup); cometGroup = null; }
+        if (singularityGroup) { disposeHierarchy(singularityGroup); singularityGroup = null; }
+        singularityUnlocked = false;
+        singularityCollapsing = false;
+        singularityCollapseScale = 1.0;
+        document.getElementById('btn-singularity').style.display = 'none';
+    }
+
+    // --- LOAD CANONICAL SOL SYSTEM ---
+    function loadSolSystem() {
+        clearCurrentStarSystem();
+        currentSystemName = "SOL SYSTEM";
+        isSolSystem = true;
+
+        RELIC_REGISTRY = {};
+        Object.keys(SOL_RELIC_TEMPLATE).forEach(k => {
+            RELIC_REGISTRY[k] = { ...SOL_RELIC_TEMPLATE[k] };
+        });
+        collectedRelics.clear();
+        CORE_RELIC_SET.clear();
+        SOL_CORE_LIST.forEach(name => CORE_RELIC_SET.add(name));
+
         const sunGeo = new THREE.IcosahedronGeometry(4200, 3);
         const sunMat = new THREE.ShaderMaterial({
             uniforms: { time: { value: 0 }, color: { value: new THREE.Color(0xffbb33) } },
@@ -1212,13 +1561,16 @@
         scene.add(starMesh);
 
         const spriteMat = new THREE.SpriteMaterial({
-            map: new THREE.CanvasTexture(generateGlowTexture()),
+            map: new THREE.CanvasTexture(generateGlowTexture(0xffcc55, 0xff7700)),
             color: 0xffaa00,
             blending: THREE.AdditiveBlending
         });
         sunSprite = new THREE.Sprite(spriteMat);
         sunSprite.scale.set(34000, 34000, 1);
+        sunSprite.userData.baseScale = 34000;
         scene.add(sunSprite);
+        sunLight.color.setHex(0xffffff);
+        sunLight.intensity = 2.2;
 
         const planetDefs = [
             {
@@ -1262,23 +1614,33 @@
                 name: "Saturn", dist: 9.582 * AU, r: 2600, type: 8, tilt: 0.466, ring: true,
                 color: { w: 0xd9be88, l: 0xf2dca6, m: 0xaa8c55, i: 0xfffaea }, seedOverride: 82.0,
                 moons: [
-                    { name: "Titan", r: 115, dist: 4500, type: 11, speed: 0.22, color: 0xff9900, atmos: 0xffaa22, density: 2.2 },
-                    { name: "Enceladus", r: 35, dist: 3500, type: 6, speed: 0.38, color: 0xffffff, density: 0.1 }
+                    { name: "Mimas", r: 22, dist: 3150, type: 4, speed: 0.46, color: 0xd8e4ee },
+                    { name: "Enceladus", r: 35, dist: 3550, type: 6, speed: 0.38, color: 0xffffff, density: 0.1 },
+                    { name: "Tethys", r: 44, dist: 4050, type: 6, speed: 0.33, color: 0xe6f2fa },
+                    { name: "Dione", r: 46, dist: 4600, type: 6, speed: 0.29, color: 0xdce8f2 },
+                    { name: "Rhea", r: 62, dist: 5300, type: 4, speed: 0.25, color: 0xcbd6e0 },
+                    { name: "Titan", r: 115, dist: 6400, type: 11, speed: 0.20, color: 0xff9900, atmos: 0xffaa22, density: 2.2 },
+                    { name: "Iapetus", r: 58, dist: 8200, type: 4, speed: 0.12, color: 0xaa9988 }
                 ]
             },
             {
                 name: "Uranus", dist: 19.20 * AU, r: 1100, type: 9, tilt: 1.707, verticalRing: true,
                 color: { w: 0x55ccee, l: 0x77ddff, m: 0x3399bb, i: 0xddeeff }, seedOverride: 44.0,
                 moons: [
-                    { name: "Miranda", r: 35, dist: 1600, type: 4, speed: 0.35, color: 0xaabbcc },
-                    { name: "Titania", r: 60, dist: 2200, type: 4, speed: 0.20, color: 0x99aabb }
+                    { name: "Miranda", r: 32, dist: 1550, type: 4, speed: 0.38, color: 0xaabbcc },
+                    { name: "Ariel", r: 46, dist: 1900, type: 6, speed: 0.31, color: 0xcceeff },
+                    { name: "Umbriel", r: 45, dist: 2300, type: 4, speed: 0.26, color: 0x778899 },
+                    { name: "Titania", r: 62, dist: 2800, type: 4, speed: 0.20, color: 0x99aabb },
+                    { name: "Oberon", r: 58, dist: 3350, type: 4, speed: 0.16, color: 0x998899 }
                 ]
             },
             {
                 name: "Neptune", dist: 30.05 * AU, r: 1100, type: 10, tilt: 0.494,
                 color: { w: 0x1d4ed8, l: 0x2563eb, m: 0x1e3a8a, i: 0x93c5fd }, seedOverride: 77.0,
                 moons: [
-                    { name: "Triton", r: 65, dist: 1700, type: 6, speed: -0.28, color: 0xffddee, atmos: 0xccbbff, density: 0.3 }
+                    { name: "Proteus", r: 24, dist: 1450, type: 4, speed: 0.36, color: 0x778899, irregular: true },
+                    { name: "Triton", r: 65, dist: 1950, type: 6, speed: -0.28, color: 0xffddee, atmos: 0xccbbff, density: 0.3 },
+                    { name: "Nereid", r: 18, dist: 2850, type: 4, speed: 0.14, color: 0x8899bb, irregular: true }
                 ]
             },
             {
@@ -1290,12 +1652,281 @@
             }
         ];
 
+        populatePlanetsFromDefs(planetDefs);
+        createAsteroidBelt();
+        createKuiperBelt();
+        createPeriodicComet();
+        updateRelicHUD();
+    }
+
+    // --- PROCEDURAL STAR SYSTEM GENERATOR (2 TO 20 RELICS, GUARANTEED ON EVERY GENERATED WORLD) ---
+    function generateProceduralStarSystem() {
+        systemGenerationCount++;
+
+        // 1 in 100 chance of returning to Sol System
+        if (Math.random() < 0.01) {
+            loadSolSystem();
+            return { isSol: true, systemName: "SOL SYSTEM", arrivalPlanet: earthRef };
+        }
+
+        clearCurrentStarSystem();
+        isSolSystem = false;
+
+        const starTypes = [
+            { spectral: "O-TYPE BLUE SUPERGIANT", color: 0x66aaff, glow: 0x3388ff, r: 6800, scale: 52000, light: 0xddeeff },
+            { spectral: "B-TYPE LUMINOUS BLUE", color: 0x99ccff, glow: 0x55aaff, r: 5400, scale: 44000, light: 0xeef5ff },
+            { spectral: "A-TYPE WHITE STAR", color: 0xffffff, glow: 0xaaddff, r: 4600, scale: 38000, light: 0xffffff },
+            { spectral: "F-TYPE YELLOW-WHITE", color: 0xfff5cc, glow: 0xffdd77, r: 4300, scale: 35000, light: 0xfff8e6 },
+            { spectral: "G-TYPE MAIN SEQUENCE", color: 0xffbb33, glow: 0xffaa00, r: 4100, scale: 34000, light: 0xffffff },
+            { spectral: "K-TYPE ORANGE DWARF", color: 0xff7722, glow: 0xff5500, r: 3100, scale: 26000, light: 0xffddbb },
+            { spectral: "M-TYPE RED GIANT", color: 0xff3311, glow: 0xcc2200, r: 7600, scale: 58000, light: 0xffbbaa }
+        ];
+
+        const starRoots = [
+            "KEPLER", "TRAPPIST", "PROXIMA", "ALDEBARAN", "VEGA", "SIRIUS",
+            "ARCTURUS", "RIGEL", "ANTARES", "DENEB", "ALTAIR", "CYGNUS",
+            "LYRA", "ORIONIS", "CENTAURI", "PEGASI", "ANDROMEDA", "DRACONIS",
+            "ERIDANI", "TAU-CETI", "GLIESE", "ROSS", "WOLF", "LALANDE", "CAPELLA"
+        ];
+        const romanNumerals = ["b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n"];
+        const moonSuffixes = ["I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX"];
+        const relicPrefixes = ["Astral", "Quantum", "Void", "Chronos", "Obsidian", "Hyperion", "Aether", "Zenith", "Solstice", "Celestial", "Nebula", "Eon"];
+        const relicNouns = ["Cipher", "Astrolabe", "Prism", "Core", "Resonator", "Compass", "Matrix", "Seal", "Glyph", "Beacon", "Monolith", "Shard"];
+
+        // Roll between 2 and 20 total relic-bearing worlds for this star system
+        const desiredRelicCount = Math.floor(rand(2, 21));
+
+        // Pick one of 5 distinct astronomical system architectures
+        const systemTemplates = [
+            { tag: "COMPACT FRONTIER", pRange: [2, 4], mGiant: [1, 3], mRock: [0, 1], gapMult: 0.55, inclMax: 0.14, eccMax: 0.08 },
+            { tag: "HOT-JUPITER SYSTEM", pRange: [3, 6], mGiant: [2, 5], mRock: [0, 2], gapMult: 0.90, inclMax: 0.22, eccMax: 0.14 },
+            { tag: "SUPER-JOVIAN ARCHIPELAGO", pRange: [7, 12], mGiant: [2, 5], mRock: [0, 3], gapMult: 1.25, inclMax: 0.18, eccMax: 0.10 },
+            { tag: "RESONANT CHAIN", pRange: [5, 9], mGiant: [1, 3], mRock: [0, 2], gapMult: 0.45, inclMax: 0.08, eccMax: 0.04 },
+            { tag: "SCATTERED CHAOS", pRange: [3, 11], mGiant: [0, 4], mRock: [0, 2], gapMult: 1.55, inclMax: 0.42, eccMax: 0.22 }
+        ];
+
+        let templatePool = systemTemplates;
+        if (desiredRelicCount <= 4) {
+            templatePool = [systemTemplates[0], systemTemplates[1], systemTemplates[4]];
+        } else if (desiredRelicCount >= 14) {
+            templatePool = [systemTemplates[2], systemTemplates[3], systemTemplates[4]];
+        }
+        const sysTemplate = templatePool[Math.floor(Math.random() * templatePool.length)];
+
+        const chosenStar = starTypes[Math.floor(Math.random() * starTypes.length)];
+        const rootName = starRoots[Math.floor(Math.random() * starRoots.length)];
+        const sectorCode = Math.floor(rand(101, 999));
+        const sysName = `${rootName}-${sectorCode}`;
+        currentSystemName = sysName;
+
+        RELIC_REGISTRY = {};
+        collectedRelics.clear();
+        CORE_RELIC_SET.clear();
+
+        // Create procedural Star
+        const sunGeo = new THREE.IcosahedronGeometry(chosenStar.r, 3);
+        const sunMat = new THREE.ShaderMaterial({
+            uniforms: { time: { value: 0 }, color: { value: new THREE.Color(chosenStar.color) } },
+            vertexShader: PLANET_VERT, fragmentShader: SUN_FRAG
+        });
+        starMesh = new THREE.Mesh(sunGeo, sunMat);
+        scene.add(starMesh);
+
+        const spriteMat = new THREE.SpriteMaterial({
+            map: new THREE.CanvasTexture(generateGlowTexture(chosenStar.color, chosenStar.glow)),
+            color: chosenStar.glow,
+            blending: THREE.AdditiveBlending
+        });
+        sunSprite = new THREE.Sprite(spriteMat);
+        sunSprite.scale.set(chosenStar.scale, chosenStar.scale, 1);
+        sunSprite.userData.baseScale = chosenStar.scale;
+        scene.add(sunSprite);
+        sunLight.color.setHex(chosenStar.light);
+        sunLight.intensity = 2.3;
+
+        let planetCount = Math.floor(rand(sysTemplate.pRange[0], sysTemplate.pRange[1] + 1));
+        planetCount = Math.max(1, Math.min(planetCount, desiredRelicCount));
+
+        const planetDefs = [];
+        const allSpawnedWorldNames = [];
+        let currentDist = rand(0.32, 0.95) * AU;
+
+        const innerPool = [
+            { type: 4, label: "Scorched Hermian World", rMin: 75, rMax: 145, w: 0x777777, l: 0xb0a89f, m: 0x4a443f, i: 0xdddddd, atmos: 0x000000, dens: 0.0, atm: "Exosphere", press: "10⁻¹³ bar", temp: "+340 °C", grav: "0.35 g", comp: "Iron Core, Silicates" },
+            { type: 5, label: "Super-Greenhouse World", rMin: 180, rMax: 290, w: 0xffcc55, l: 0xf5c84c, m: 0xb87b22, i: 0xfff0b3, atmos: 0xffcc44, dens: 2.6, atm: "CO₂ 97%, SO₂", press: "85.0 bar", temp: "+450 °C", grav: "0.88 g", comp: "Basalt, Sulfuric Clouds" },
+            { type: 1, label: "Exo-Terran Biosphere", rMin: 210, rMax: 340, w: 0x064c9c, l: 0x248f48, m: 0x7a6850, i: 0xffffff, atmos: 0x33aaff, dens: 1.25, atm: "N₂ 76%, O₂ 22%", press: "1.05 bar", temp: "+18 °C", grav: "1.04 g", comp: "Silicates, Liquid Oceans" },
+            { type: 1, label: "Archipelago Ocean World", rMin: 230, rMax: 360, w: 0x05668d, l: 0x2a9d8f, m: 0x6b705c, i: 0xffffff, atmos: 0x44ccff, dens: 1.3, atm: "N₂ 72%, O₂ 25%, H₂O", press: "1.18 bar", temp: "+24 °C", grav: "1.12 g", comp: "Deep Global Hydrosphere" },
+            { type: 2, label: "Arid Ferric Desert", rMin: 120, rMax: 220, w: 0xb8441e, l: 0xd9643a, m: 0x5c1f0e, i: 0xffffff, atmos: 0xff7755, dens: 0.45, atm: "CO₂ 94%, N₂ 4%", press: "0.012 bar", temp: "-48 °C", grav: "0.42 g", comp: "Iron Oxides, Basalt" },
+            { type: 7, label: "Tidal Magma World", rMin: 110, rMax: 190, w: 0xff4400, l: 0xffaa11, m: 0x331105, i: 0xffdd88, atmos: 0xff6600, dens: 0.6, atm: "SO₂, Silicate Vapor", press: "0.04 bar", temp: "+680 °C", grav: "0.51 g", comp: "Molten Silicate Mantle" }
+        ];
+
+        const outerPool = [
+            { type: 3, label: "Banded Gas Supergiant", rMin: 2200, rMax: 3600, w: 0xc86d32, l: 0xe6a168, m: 0x7d3214, i: 0xffeedd, atmos: 0xffaa66, dens: 0.4, atm: "H₂ 89%, He 10%, NH₃", press: "> 1,000 bar", temp: "-115 °C", grav: "2.40 g", comp: "Metallic Hydrogen" },
+            { type: 8, label: "Ringed Gold Gas Giant", rMin: 1900, rMax: 2900, w: 0xd4b679, l: 0xf0d69c, m: 0x9e7f47, i: 0xfffaea, atmos: 0xffe099, dens: 0.4, atm: "H₂ 95%, He 4%", press: "> 1,000 bar", temp: "-145 °C", grav: "1.12 g", comp: "Liquid H₂, Ice Ring System" },
+            { type: 9, label: "Cyan Ice Giant", rMin: 950, rMax: 1500, w: 0x44bbdd, l: 0x66ddff, m: 0x2288aa, i: 0xddeeff, atmos: 0x66eeff, dens: 0.5, atm: "H₂ 82%, He 15%, CH₄ 3%", press: "> 100 bar", temp: "-192 °C", grav: "0.91 g", comp: "Water-Ammonia-Methane Ice" },
+            { type: 10, label: "Cobalt Storm Ice Giant", rMin: 980, rMax: 1600, w: 0x1a44cc, l: 0x2a66ff, m: 0x142c7a, i: 0x99ccff, atmos: 0x4488ff, dens: 0.5, atm: "H₂ 80%, He 18%, CH₄ 2%", press: "> 100 bar", temp: "-204 °C", grav: "1.18 g", comp: "Supercritical Ice Mantle" },
+            { type: 6, label: "Cryo-Ocean Super-Earth", rMin: 140, rMax: 240, w: 0x88ccff, l: 0xeaf6ff, m: 0x5588aa, i: 0xffffff, atmos: 0x88ddff, dens: 0.25, atm: "Trace O₂, N₂", press: "0.002 bar", temp: "-165 °C", grav: "0.62 g", comp: "Thick Ice Shell, Sub-Ocean" },
+            { type: 12, label: "Nitrogen Glacier Dwarf", rMin: 55, rMax: 110, w: 0x9c6e4e, l: 0xcfa98c, m: 0x522e1b, i: 0xf5f0eb, atmos: 0x99bbff, dens: 0.15, atm: "N₂ 98%, CH₄", press: "0.0001 bar", temp: "-228 °C", grav: "0.08 g", comp: "Nitrogen Ice, Tholin Rock" }
+        ];
+
+        const addMoonToPlanet = (pDef, isGiant) => {
+            const mIdx = pDef.moons.length;
+            const mName = `${pDef.name}-${moonSuffixes[mIdx] || (mIdx + 1)}`;
+            const mTypes = isGiant ? [4, 6, 7, 11] : [4, 6];
+            const mType = mTypes[Math.floor(Math.random() * mTypes.length)];
+            const mColors = { 4: 0xb8b8c2, 6: 0xdcf4ff, 7: 0xffcc22, 11: 0xff9922 };
+            const mAtmos = { 4: 0x000000, 6: 0x88ccff, 7: 0xffaa00, 11: 0xffaa33 };
+            const mDens = { 4: 0.0, 6: 0.15, 7: 0.35, 11: 1.8 };
+            const mClass = { 4: "Cratered Silicate Satellite", 6: "Cryogenic Ice Moon", 7: "Tidal Volcanic Moon", 11: "Hazy Hydrocarbon Moon" };
+            const mDist = pDef.r * rand(1.6, 3.8) + mIdx * (pDef.r * 0.55);
+            const mRad = Math.max(14, Math.min(pDef.r * 0.14, rand(22, 95)));
+
+            pDef.moons.push({
+                name: mName,
+                r: mRad,
+                dist: mDist,
+                type: mType,
+                speed: rand(0.14, 0.48) * (Math.random() < 0.18 ? -1 : 1),
+                color: mColors[mType],
+                atmos: mAtmos[mType],
+                density: mDens[mType],
+                irregular: (mRad < 28 && Math.random() < 0.5)
+            });
+
+            SCIENCE_DATABASE[mName.toUpperCase()] = {
+                class: mClass[mType],
+                atm: mType === 11 ? "N₂ 94%, CH₄ 6%" : (mType === 7 ? "SO₂ Plumes" : "Exosphere"),
+                press: mType === 11 ? "1.20 bar" : "< 10⁻¹¹ bar",
+                temp: mType === 7 ? "-135 °C" : "-185 °C",
+                grav: `${(mRad / 600).toFixed(3)} g`,
+                comp: mType === 6 ? "Crystalline Water Ice" : "Silicate & Iron Core",
+                rad: `${rand(0.05, 4.2).toFixed(2)} mSv/hr`
+            };
+            allSpawnedWorldNames.push(mName);
+        };
+
+        for (let i = 0; i < planetCount; i++) {
+            const isInner = (sysTemplate.tag === "HOT-JUPITER SYSTEM")
+                ? (i > 0 && i < Math.ceil(planetCount * 0.45))
+                : (i < Math.ceil(planetCount * 0.45));
+            const pool = isInner ? innerPool : outerPool;
+            const arch = pool[Math.floor(Math.random() * pool.length)];
+            const pName = `${sysName}${romanNumerals[i] || (i + 1)}`;
+            const radius = rand(arch.rMin, arch.rMax);
+            const isGiant = (arch.type === 3 || arch.type === 8 || arch.type === 9 || arch.type === 10);
+            const hasRing = isGiant ? (Math.random() < 0.55) : (Math.random() < 0.12);
+
+            const hueShift = rand(-0.08, 0.08);
+            const cWater = new THREE.Color(arch.w).offsetHSL(hueShift, 0, 0);
+            const cLand = new THREE.Color(arch.l).offsetHSL(hueShift, 0, 0);
+            const cMount = new THREE.Color(arch.m).offsetHSL(hueShift, 0, 0);
+
+            const pDef = {
+                name: pName,
+                dist: currentDist,
+                r: radius,
+                type: arch.type,
+                tilt: rand(0.02, 2.2),
+                orbitIncl: rand(-sysTemplate.inclMax, sysTemplate.inclMax),
+                orbitEcc: rand(0.0, sysTemplate.eccMax),
+                retrograde: Math.random() < 0.12,
+                ring: hasRing,
+                verticalRing: hasRing && (arch.type === 9 || Math.random() < 0.2),
+                color: { w: cWater.getHex(), l: cLand.getHex(), m: cMount.getHex(), i: arch.i },
+                atmos: arch.atmos,
+                density: arch.dens,
+                moons: []
+            };
+
+            SCIENCE_DATABASE[pName.toUpperCase()] = {
+                class: arch.label,
+                atm: arch.atm,
+                press: arch.press,
+                temp: arch.temp,
+                grav: arch.grav,
+                comp: arch.comp,
+                rad: `${rand(0.03, 9.5).toFixed(2)} mSv/hr`
+            };
+
+            allSpawnedWorldNames.push(pName);
+
+            const remainingWorldsNeeded = desiredRelicCount - allSpawnedWorldNames.length;
+            const remainingPlanetsAfterThis = planetCount - 1 - i;
+            const maxAllowedMoonsHere = Math.max(0, remainingWorldsNeeded - remainingPlanetsAfterThis);
+            const desiredMoonsHere = isGiant
+                ? Math.floor(rand(sysTemplate.mGiant[0], sysTemplate.mGiant[1] + 1))
+                : Math.floor(rand(sysTemplate.mRock[0], sysTemplate.mRock[1] + 1));
+            const moonCount = Math.min(desiredMoonsHere, maxAllowedMoonsHere);
+
+            for (let m = 0; m < moonCount; m++) {
+                if (allSpawnedWorldNames.length >= desiredRelicCount) break;
+                addMoonToPlanet(pDef, isGiant);
+            }
+
+            planetDefs.push(pDef);
+            const stepAU = isGiant ? rand(2.2, 6.2) : rand(0.38, 1.45);
+            currentDist += stepAU * AU * sysTemplate.gapMult;
+        }
+
+        // Top up with moons if needed so total worlds & relics match desiredRelicCount (2 to 20)
+        let safetyCounter = 0;
+        while (allSpawnedWorldNames.length < desiredRelicCount && safetyCounter < 40) {
+            safetyCounter++;
+            const host = planetDefs[Math.floor(Math.random() * planetDefs.length)];
+            const hostIsGiant = (host.type === 3 || host.type === 8 || host.type === 9 || host.type === 10);
+            addMoonToPlanet(host, hostIsGiant);
+        }
+
+        const worldColorLookup = {};
+        planetDefs.forEach(p => {
+            worldColorLookup[p.name] = p.atmos || p.color.l;
+            p.moons.forEach(m => {
+                worldColorLookup[m.name] = m.color;
+            });
+        });
+
+        // Guarantee every single generated planet and moon has a collectible Precursor Relic
+        allSpawnedWorldNames.forEach(wName => {
+            const angle = rand(0, Math.PI * 2);
+            const radDist = rand(85, 920);
+            RELIC_REGISTRY[wName] = {
+                name: `${wName} ${relicPrefixes[Math.floor(Math.random() * relicPrefixes.length)]} ${relicNouns[Math.floor(Math.random() * relicNouns.length)]}`,
+                x: Math.round(Math.cos(angle) * radDist),
+                z: Math.round(Math.sin(angle) * radDist),
+                color: worldColorLookup[wName] || 0x00ffcc
+            };
+            CORE_RELIC_SET.add(wName);
+        });
+
+        populatePlanetsFromDefs(planetDefs);
+        if (Math.random() < 0.75) createAsteroidBelt();
+        if (Math.random() < 0.70) createKuiperBelt();
+        if (Math.random() < 0.65) createPeriodicComet();
+        updateRelicHUD();
+
+        const arrivalP = planets.find(p => !p.isMoon) || planets[0];
+        return {
+            isSol: false,
+            systemName: sysName,
+            spectral: chosenStar.spectral,
+            archetype: sysTemplate.tag,
+            relicGoal: CORE_RELIC_SET.size,
+            arrivalPlanet: arrivalP
+        };
+    }
+
+    function populatePlanetsFromDefs(planetDefs) {
         const sphereGeo = new THREE.IcosahedronGeometry(1, 4);
 
         planetDefs.forEach(def => {
             const planetGroup = new THREE.Group();
-            const angle = rand(0, Math.PI * 2);
-            planetGroup.position.set(Math.cos(angle) * def.dist, 0, Math.sin(angle) * def.dist);
+            const initialAngle = rand(0, Math.PI * 2);
+            const incl = def.orbitIncl || 0;
+            planetGroup.position.set(
+                Math.cos(initialAngle) * def.dist,
+                Math.sin(initialAngle) * def.dist * Math.sin(incl),
+                Math.sin(initialAngle) * def.dist
+            );
 
             def.seed = def.seedOverride || rand(0, 100);
 
@@ -1326,7 +1957,8 @@
                 mesh: mesh,
                 tiltGroup: tiltAxisGroup,
                 data: def,
-                orbitSpeed: 250 / def.dist,
+                initialAngle: initialAngle,
+                orbitSpeed: (250 / def.dist) * (def.retrograde ? -1 : 1),
                 isMoon: false
             };
 
@@ -1364,10 +1996,11 @@
                     moonOrbitGroup.rotation.z = rand(-0.15, 0.15);
 
                     const mType = moon.type || 4;
+                    const mSeed = rand(0, 100);
                     const mUniforms = {
                         sunPosition: { value: _SUN_POS },
                         type: { value: mType },
-                        seed: { value: rand(0, 100) },
+                        seed: { value: mSeed },
                         time: { value: 0 },
                         cWater: { value: new THREE.Color(moon.color) },
                         cLand: { value: new THREE.Color(moon.color) },
@@ -1408,6 +2041,7 @@
                             name: moon.name,
                             r: moon.r,
                             type: mType,
+                            seed: mSeed,
                             color: moon.color,
                             atmos: moon.atmos,
                             density: moon.density,
@@ -1426,9 +2060,471 @@
             planets.push(pObj);
             if (def.name === 'Earth') earthRef = pObj;
         });
+    }
 
-        createAsteroidBelt();
-        createKuiperBelt();
+    function createPeriodicComet() {
+        cometGroup = new THREE.Group();
+        const nucleus = new THREE.Mesh(
+            new THREE.DodecahedronGeometry(26, 1),
+            new THREE.MeshLambertMaterial({ color: 0xaaddff })
+        );
+        cometGroup.add(nucleus);
+
+        const comaSprite = new THREE.Sprite(new THREE.SpriteMaterial({
+            map: new THREE.CanvasTexture(generateGlowTexture(0x88eeff, 0x2277ff)),
+            color: 0x99eeff,
+            blending: THREE.AdditiveBlending,
+            transparent: true
+        }));
+        comaSprite.scale.set(950, 950, 1);
+        cometGroup.add(comaSprite);
+
+        const tailGeo = new THREE.ConeGeometry(160, 4200, 12, 1, true);
+        tailGeo.translate(0, 2100, 0);
+        tailGeo.rotateX(Math.PI / 2);
+        const tailMat = new THREE.MeshBasicMaterial({
+            color: 0x55ccff,
+            transparent: true,
+            opacity: 0.25,
+            side: THREE.DoubleSide,
+            blending: THREE.AdditiveBlending,
+            depthWrite: false
+        });
+        const tailMesh = new THREE.Mesh(tailGeo, tailMat);
+        cometGroup.add(tailMesh);
+        scene.add(cometGroup);
+    }
+
+    // --- GALACTIC CORE SCENE (ROTATING KERR BLACK HOLE SAGITTARIUS A*) ---
+    function buildGalacticCoreScene() {
+        coreScene = new THREE.Scene();
+        coreScene.background = new THREE.Color(0x03010a);
+        coreScene.add(new THREE.AmbientLight(0x8866cc, 1.3));
+
+        const coreLight = new THREE.PointLight(0xffbb66, 3.8, 0);
+        coreScene.add(coreLight);
+
+        // Dense Golden & Blue Galactic Core Star Cluster
+        const starGeo = new THREE.BufferGeometry();
+        const starPos = [];
+        const starCols = [];
+        const palette = [0xffe8aa, 0xffcc77, 0x99ccff, 0xffffff, 0xffaaee];
+        const tmpC = new THREE.Color();
+        for (let i = 0; i < 4500; i++) {
+            const r = rand(4500, 420000);
+            const theta = rand(0, Math.PI * 2);
+            const phi = Math.acos(rand(-1, 1));
+            starPos.push(
+                r * Math.sin(phi) * Math.cos(theta),
+                r * Math.sin(phi) * Math.sin(theta) * 0.65,
+                r * Math.cos(phi)
+            );
+            tmpC.setHex(palette[i % palette.length]);
+            const bright = rand(0.55, 1.0);
+            starCols.push(tmpC.r * bright, tmpC.g * bright, tmpC.b * bright);
+        }
+        starGeo.setAttribute('position', new THREE.Float32BufferAttribute(starPos, 3));
+        starGeo.setAttribute('color', new THREE.Float32BufferAttribute(starCols, 3));
+        coreStarField = new THREE.Points(starGeo, new THREE.PointsMaterial({ vertexColors: true, size: 1, sizeAttenuation: false }));
+        coreScene.add(coreStarField);
+
+        // Tilted Kerr Spin Axis Container
+        blackHoleGroup = new THREE.Group();
+        blackHoleGroup.rotation.set(0.32, 0.0, -0.22);
+        coreScene.add(blackHoleGroup);
+
+        // Supermassive Event Horizon Sphere
+        const horizon = new THREE.Mesh(
+            new THREE.SphereGeometry(1450, 32, 32),
+            new THREE.MeshBasicMaterial({ color: 0x000000 })
+        );
+        blackHoleGroup.add(horizon);
+
+        // Gravitationally Lensed Einstein Photon Halo
+        const haloMat = new THREE.ShaderMaterial({
+            uniforms: {
+                time: { value: 0 },
+                colorInner: { value: new THREE.Color(0xffffff) },
+                colorOuter: { value: new THREE.Color(0xff8822) },
+                collapseFactor: { value: 1.0 }
+            },
+            vertexShader: PLANET_VERT,
+            fragmentShader: SINGULARITY_FRAG,
+            transparent: true,
+            blending: THREE.AdditiveBlending,
+            side: THREE.DoubleSide,
+            depthWrite: false
+        });
+        innerPhotonRing = new THREE.Mesh(new THREE.PlaneGeometry(5400, 5400), haloMat);
+        blackHoleGroup.add(innerPhotonRing);
+
+        // Primary Rotating Relativistic Accretion Torus
+        const diskMat = new THREE.ShaderMaterial({
+            uniforms: {
+                time: { value: 0 },
+                colorInner: { value: new THREE.Color(0xfff4d8) },
+                colorOuter: { value: new THREE.Color(0xff4400) },
+                collapseFactor: { value: 1.0 }
+            },
+            vertexShader: PLANET_VERT,
+            fragmentShader: SINGULARITY_FRAG,
+            transparent: true,
+            blending: THREE.AdditiveBlending,
+            side: THREE.DoubleSide,
+            depthWrite: false
+        });
+        accretionDiskMesh = new THREE.Mesh(new THREE.PlaneGeometry(17500, 17500), diskMat);
+        accretionDiskMesh.rotation.x = Math.PI * 0.48;
+        blackHoleGroup.add(accretionDiskMesh);
+
+        // Secondary Counter-Phased Corona Layer for 3D Depth
+        const coronaDisk = new THREE.Mesh(new THREE.PlaneGeometry(13200, 13200), diskMat);
+        coronaDisk.rotation.x = Math.PI * 0.51;
+        coronaDisk.rotation.z = 1.1;
+        blackHoleGroup.add(coronaDisk);
+
+        // Twin Relativistic Polar Jets
+        const jetGeo = new THREE.CylinderGeometry(90, 950, 26000, 16, 1, true);
+        const jetMat = new THREE.MeshBasicMaterial({
+            color: 0x66ccff,
+            transparent: true,
+            opacity: 0.24,
+            blending: THREE.AdditiveBlending,
+            side: THREE.DoubleSide,
+            depthWrite: false
+        });
+        const northJet = new THREE.Mesh(jetGeo, jetMat);
+        northJet.position.y = 13500;
+        const southJet = new THREE.Mesh(jetGeo, jetMat);
+        southJet.rotation.x = Math.PI;
+        southJet.position.y = -13500;
+        blackHoleGroup.add(northJet);
+        blackHoleGroup.add(southJet);
+
+        // Fast-Orbiting S-Stars around Sagittarius A*
+        coreSStars = [];
+        for (let s = 0; s < 14; s++) {
+            const sStar = new THREE.Mesh(
+                new THREE.SphereGeometry(55 + s * 6, 8, 8),
+                new THREE.MeshBasicMaterial({ color: s % 2 === 0 ? 0x99ddff : 0xffeeaa })
+            );
+            const orbitR = 2600 + s * 680;
+            const speed = (1.6 / Math.sqrt(orbitR / 2600)) * (s % 3 === 0 ? -1 : 1);
+            const incl = rand(-0.6, 0.6);
+            const phase = rand(0, Math.PI * 2);
+            coreScene.add(sStar);
+            coreSStars.push({ mesh: sStar, r: orbitR, speed, incl, phase });
+        }
+    }
+
+    // --- ONE-WAY COLLAPSING SINGULARITY MESH ---
+    function spawnSingularityMesh(worldPos, labelMsg, shouldCollapseAfter) {
+        if (singularityGroup) {
+            disposeHierarchy(singularityGroup);
+            singularityGroup = null;
+        }
+
+        singularityGroup = new THREE.Group();
+        singularityGroup.position.copy(worldPos);
+        singularityCollapseScale = 1.0;
+        singularityCollapsing = !!shouldCollapseAfter;
+
+        const voidCore = new THREE.Mesh(
+            new THREE.SphereGeometry(140, 24, 24),
+            new THREE.MeshBasicMaterial({ color: 0x000000 })
+        );
+        singularityGroup.add(voidCore);
+
+        const diskMat = new THREE.ShaderMaterial({
+            uniforms: {
+                time: { value: 0 },
+                colorInner: { value: new THREE.Color(0x00ffff) },
+                colorOuter: { value: new THREE.Color(0xc844ff) },
+                collapseFactor: { value: 1.0 }
+            },
+            vertexShader: PLANET_VERT,
+            fragmentShader: SINGULARITY_FRAG,
+            transparent: true,
+            blending: THREE.AdditiveBlending,
+            side: THREE.DoubleSide,
+            depthWrite: false
+        });
+
+        const outerDisk = new THREE.Mesh(new THREE.PlaneGeometry(1400, 1400), diskMat);
+        const crossDisk = new THREE.Mesh(new THREE.PlaneGeometry(1150, 1150), diskMat);
+        crossDisk.rotation.y = Math.PI * 0.35;
+        singularityGroup.add(outerDisk);
+        singularityGroup.add(crossDisk);
+        singularityGroup.userData.diskMat = diskMat;
+
+        scene.add(singularityGroup);
+        if (labelMsg) log(labelMsg);
+    }
+
+    // --- OPENING CUTSCENE: GALACTIC CORE DIVE -> SYSTEM EJECTION -> RIFT COLLAPSE ---
+    function startOpeningCutscene() {
+        sound.init();
+        sound.playSingularitySwell();
+
+        cutscene.active = true;
+        cutscene.phase = 'CORE_DIVE';
+        cutscene.timer = 0;
+
+        cutscene.startPos.set(0, 1900, 9200);
+        cutscene.endPos.set(0, 120, 1650);
+        cutscene.lookTarget.set(0, 0, 0);
+
+        coreCamera.position.copy(cutscene.startPos);
+        coreCamera.lookAt(cutscene.lookTarget);
+        coreCamera.fov = 62;
+        coreCamera.updateProjectionMatrix();
+
+        gameState = 'CUTSCENE';
+        document.getElementById('sys-name').innerText = "SAGITTARIUS A*";
+        document.getElementById('env-disp').innerText = "SINGULARITY TRANSIT";
+        document.getElementById('cutscene-caption').innerText = "PLUNGING INTO GALACTIC CORE SINGULARITY...";
+        document.getElementById('cutscene-hud').style.display = 'flex';
+    }
+
+    function setupArrivalSingularity(targetPlanetObj, arrivalLabel) {
+        if (!targetPlanetObj) return;
+        targetPlanetObj.mesh.getWorldPosition(_TARGET_WORLD_POS);
+        const r = targetPlanetObj.data.r;
+        const exitAzimuth = rand(0, Math.PI * 2);
+        const exitElev = rand(0.15, 0.55);
+        const distMult = rand(4.5, 6.2);
+
+        const spawnRiftPos = new THREE.Vector3(
+            _TARGET_WORLD_POS.x + Math.cos(exitAzimuth) * r * distMult,
+            _TARGET_WORLD_POS.y + r * (1.2 + exitElev * 2.4),
+            _TARGET_WORLD_POS.z + Math.sin(exitAzimuth) * r * distMult
+        );
+
+        spawnSingularityMesh(spawnRiftPos, null, true);
+
+        const offsetDir = new THREE.Vector3().subVectors(_TARGET_WORLD_POS, spawnRiftPos).normalize();
+        const shipStopPos = spawnRiftPos.clone().addScaledVector(offsetDir, r * 2.1);
+
+        cutscene.phase = 'SOL_EMERGE';
+        cutscene.timer = 0;
+        cutscene.startPos.copy(spawnRiftPos);
+        cutscene.endPos.copy(shipStopPos);
+        cutscene.lookTarget.copy(_TARGET_WORLD_POS);
+
+        camera.position.copy(cutscene.startPos);
+        camera.lookAt(cutscene.lookTarget);
+        camera.fov = 138;
+        camera.updateProjectionMatrix();
+
+        document.getElementById('sys-name').innerText = currentSystemName;
+        document.getElementById('cutscene-caption').innerText = `EJECTED INTO ${arrivalLabel} — SINGULARITY COLLAPSING...`;
+    }
+
+    function updateCutscene(dt) {
+        if (!cutscene.active) return;
+
+        if (cutscene.phase === 'CORE_DIVE') {
+            cutscene.timer += dt;
+            const rawT = Math.min(1.0, cutscene.timer / cutscene.diveDuration);
+            const accelT = rawT * rawT * rawT;
+
+            coreCamera.position.lerpVectors(cutscene.startPos, cutscene.endPos, accelT);
+            coreCamera.lookAt(cutscene.lookTarget);
+            coreCamera.fov = 62 + accelT * 78;
+            coreCamera.updateProjectionMatrix();
+
+            document.getElementById('alt-disp').innerText = `${Math.max(0, Math.floor(coreCamera.position.length() - 1450))} km`;
+            document.getElementById('vel-disp').innerText = Math.floor(accelT * 299792);
+
+            if (rawT >= 1.0) {
+                const transOverlay = document.getElementById('transition-overlay');
+                transOverlay.style.opacity = '1';
+                setupArrivalSingularity(earthRef, "SOL SYSTEM (EARTH ORBIT)");
+                setTimeout(() => { transOverlay.style.opacity = '0'; }, 180);
+            }
+        } else if (cutscene.phase === 'SOL_EMERGE') {
+            cutscene.timer += dt;
+            const rawT = Math.min(1.0, cutscene.timer / cutscene.emergeDuration);
+            const easeT = 1.0 - Math.pow(1.0 - rawT, 3.0);
+
+            camera.position.lerpVectors(cutscene.startPos, cutscene.endPos, easeT);
+            camera.lookAt(cutscene.lookTarget);
+            camera.fov = 138 - easeT * 78;
+            camera.updateProjectionMatrix();
+
+            const navData = getDistanceToSurface(camera.position);
+            document.getElementById('alt-disp').innerText = `${Math.floor(navData.alt)} km`;
+            document.getElementById('vel-disp').innerText = Math.floor((1.0 - easeT) * 180000);
+
+            if (rawT >= 1.0) {
+                finishOpeningCutscene();
+            }
+        }
+    }
+
+    function finishOpeningCutscene() {
+        if (!cutscene.active) return;
+        cutscene.active = false;
+        document.getElementById('cutscene-hud').style.display = 'none';
+        document.getElementById('transition-overlay').style.opacity = '0';
+
+        if (cutscene.phase === 'CORE_DIVE') {
+            setupArrivalSingularity(earthRef, "SOL SYSTEM (EARTH ORBIT)");
+            cutscene.active = false;
+            document.getElementById('cutscene-hud').style.display = 'none';
+        }
+
+        camera.position.copy(cutscene.endPos);
+        camera.lookAt(cutscene.lookTarget);
+        camera.fov = 60;
+        camera.updateProjectionMatrix();
+        syncShipAnglesFromCamera(camera);
+
+        ship.speed = 0;
+        gameState = 'SPACE';
+        document.getElementById('env-disp').innerText = "ORBITAL CRUISE";
+        log("SINGULARITY COLLAPSED. RELIC QUEST INITIALIZED.");
+    }
+
+    // --- BLACK HOLE CORE SINGULARITY JUMP TO RANDOM PROCEDURAL STAR SYSTEM ---
+    function triggerBlackHoleSingularityJump() {
+        if (coreTransitionTriggered) return;
+        coreTransitionTriggered = true;
+        sound.playSingularitySwell();
+        log("SINGULARITY HORIZON BREACHED! FOLDING SPACETIME...");
+
+        const transOverlay = document.getElementById('transition-overlay');
+        transOverlay.style.opacity = '1';
+
+        setTimeout(() => {
+            const genInfo = generateProceduralStarSystem();
+            const arrivalPlanet = genInfo.arrivalPlanet;
+            const label = genInfo.isSol
+                ? "SOL SYSTEM (1% ANOMALY RETURN!)"
+                : `${genInfo.systemName} (${genInfo.archetype} • ${genInfo.relicGoal} RELICS)`;
+
+            setupArrivalSingularity(arrivalPlanet, label);
+            gameState = 'CUTSCENE';
+            cutscene.active = true;
+            document.getElementById('cutscene-hud').style.display = 'flex';
+            document.getElementById('env-disp').innerText = "SINGULARITY TRANSIT";
+
+            if (genInfo.isSol) {
+                log("★ 1-IN-100 ANOMALY: RETURNED TO SOL SYSTEM! ★");
+            } else {
+                log(`NEW SECTOR: ${genInfo.systemName} (${genInfo.spectral})`);
+                log(`QUEST: COLLECT ALL ${genInfo.relicGoal} RELICS IN THIS SYSTEM.`);
+            }
+
+            setTimeout(() => {
+                transOverlay.style.opacity = '0';
+                coreTransitionTriggered = false;
+            }, 250);
+        }, 950);
+    }
+
+    // --- DEBUG CODE ("godmode") ---
+    function activateGodMode() {
+        sound.playChime();
+        CORE_RELIC_SET.forEach(name => collectedRelics.add(name));
+        updateRelicHUD();
+
+        const banner = document.getElementById('discovery-banner');
+        document.getElementById('discovery-title').innerText = "GODMODE OVERRIDE\nALL RELICS SYNCHRONIZED • SINGULARITY OPENED";
+        banner.style.display = 'block';
+        setTimeout(() => { banner.style.display = 'none'; }, 5000);
+        log("★ GODMODE ACTIVATED: GALACTIC CORE SINGULARITY OPENED ★");
+
+        const openSingularityInFrontOfShip = () => {
+            camera.getWorldDirection(_V1);
+            const riftPos = camera.position.clone().addScaledVector(_V1, 1400);
+            singularityUnlocked = true;
+            spawnSingularityMesh(riftPos, "GALACTIC CORE SINGULARITY MATERIALIZED AHEAD", false);
+        };
+
+        if (gameState === 'SURFACE') {
+            initiateTakeoff();
+            setTimeout(openSingularityInFrontOfShip, 1550);
+        } else if (gameState === 'SPACE') {
+            openSingularityInFrontOfShip();
+        }
+    }
+
+    // --- RELIC TRACKING & GALACTIC CORE GATEWAY ---
+    function updateRelicHUD() {
+        let coreCollected = 0;
+        CORE_RELIC_SET.forEach(name => {
+            if (collectedRelics.has(name)) coreCollected++;
+        });
+        const totalRequired = Math.max(1, CORE_RELIC_SET.size);
+
+        const disp = document.getElementById('relic-disp');
+        if (disp) disp.innerText = `${coreCollected}/${totalRequired}`;
+
+        const sciCount = document.getElementById('sci-relic-count');
+        if (sciCount) sciCount.innerText = `${coreCollected} / ${totalRequired} RELICS`;
+
+        const grid = document.getElementById('sci-relic-grid');
+        if (grid) {
+            grid.innerHTML = '';
+            CORE_RELIC_SET.forEach(name => {
+                const div = document.createElement('div');
+                const found = collectedRelics.has(name);
+                div.className = found ? 'relic-item-done' : 'relic-item-open';
+                div.innerText = `${found ? '◆' : '◇'} ${name.toUpperCase()}`;
+                grid.appendChild(div);
+            });
+        }
+
+        if (coreCollected >= totalRequired && !singularityUnlocked) {
+            singularityUnlocked = true;
+            sound.playSingularitySwell();
+            const riftPos = new THREE.Vector3(0, 2800, 0);
+            if (planets.length > 0 && planets[0].mesh) {
+                planets[0].mesh.getWorldPosition(_TARGET_WORLD_POS);
+                riftPos.set(_TARGET_WORLD_POS.x + 1200, 1200, _TARGET_WORLD_POS.z + 1200);
+            }
+            spawnSingularityMesh(riftPos, "★ ALL RELICS COLLECTED! GALACTIC CORE SINGULARITY OPENED ★", false);
+            const sciStatus = document.getElementById('sci-relic-status');
+            if (sciStatus) {
+                sciStatus.innerText = "GALACTIC CORE SINGULARITY ACTIVE! Fly into the rift to enter Sagittarius A*.";
+                sciStatus.style.color = "#00ff66";
+            }
+        }
+    }
+
+    function enterGalacticCore() {
+        if (gameState !== 'SPACE' || !singularityUnlocked) return;
+        gameState = 'REENTRY';
+        sound.playSingularitySwell();
+        log("ENTERING GALACTIC CORE SINGULARITY — RIFT COLLAPSING BEHIND...");
+
+        const transOverlay = document.getElementById('transition-overlay');
+        transOverlay.style.opacity = '1';
+
+        setTimeout(() => {
+            if (singularityGroup) {
+                disposeHierarchy(singularityGroup);
+                singularityGroup = null;
+            }
+            singularityUnlocked = false;
+            singularityCollapsing = false;
+            document.getElementById('btn-singularity').style.display = 'none';
+
+            gameState = 'GALACTIC_CORE';
+            coreCamera.position.set(0, 1400, 11500);
+            coreCamera.lookAt(0, 0, 0);
+            syncShipAnglesFromCamera(coreCamera);
+            ship.speed = 0;
+
+            transOverlay.style.opacity = '0';
+            document.getElementById('btn-land').style.display = 'none';
+            document.getElementById('btn-jump').style.display = 'none';
+            document.getElementById('sys-name').innerText = "SAGITTARIUS A*";
+            document.getElementById('env-disp').innerText = "GALACTIC CORE ORBIT";
+            updateSciencePanel("SAGITTARIUS A*");
+            log("SINGULARITY VANISHED. WELCOME TO SAGITTARIUS A*.");
+        }, 1100);
     }
 
     function createAsteroidBelt() {
@@ -1504,6 +2600,9 @@
         surfaceWaterMesh = null;
         surfaceLavaLight = null;
         lightningFlashLight = null;
+        currentRelicObj = null;
+        currentRelicMesh = null;
+        prevRelicDist = null;
         skyGroup = new THREE.Group();
         surfaceScene.add(skyGroup);
 
@@ -1580,7 +2679,7 @@
             const isMars = (planetData.name === 'Mars');
             const haloColor = isMars ? 0x44aaff : 0xffaa00;
             const spriteMat = new THREE.SpriteMaterial({
-                map: new THREE.CanvasTexture(generateGlowTexture()),
+                map: new THREE.CanvasTexture(generateGlowTexture(0xffcc55, 0xff7700)),
                 color: haloColor, blending: THREE.AdditiveBlending, fog: false
             });
             const sprite = new THREE.Sprite(spriteMat);
@@ -1656,18 +2755,19 @@
 
         createWeather(planetData.type, brightness, planetData.name);
 
-        const size = 2600;
-        const segs = 110;
-        const geo = new THREE.PlaneGeometry(size, size, segs, segs);
+        // High-density terrain grid with exact cached elevation array for zero-clipping collision
+        const geo = new THREE.PlaneGeometry(TERRAIN_SIZE, TERRAIN_SIZE, TERRAIN_SEGS, TERRAIN_SEGS);
         geo.rotateX(-Math.PI / 2);
 
         const pos = geo.attributes.position;
+        terrainVertsPerSide = TERRAIN_SEGS + 1;
+        terrainHeightGrid = new Float32Array(pos.count);
+
         const colors = [];
         const type = planetData.type;
 
         const cLand = new THREE.Color(planetData.color.l || planetData.color);
         const cMount = new THREE.Color(planetData.color.m || planetData.color);
-        const cWater = new THREE.Color(planetData.color.w || planetData.color);
         const cIce = new THREE.Color(planetData.color.i || 0xffffff);
 
         for (let i = 0; i < pos.count; i++) {
@@ -1675,6 +2775,7 @@
             const z = pos.getZ(i);
             const y = getTerrainHeight(x, z, planetData);
             pos.setY(i, y);
+            terrainHeightGrid[i] = y;
 
             let c = cLand.clone();
             if (type === 1) {
@@ -1715,14 +2816,14 @@
         surfaceScene.add(surfaceMesh);
 
         if (type === 1) {
-            const waterGeo = new THREE.PlaneGeometry(2600, 2600);
+            const waterGeo = new THREE.PlaneGeometry(TERRAIN_SIZE, TERRAIN_SIZE);
             waterGeo.rotateX(-Math.PI / 2);
             const waterMat = new THREE.MeshLambertMaterial({ color: 0x085588, transparent: true, opacity: 0.78 });
             surfaceWaterMesh = new THREE.Mesh(waterGeo, waterMat);
             surfaceWaterMesh.position.y = 0.5;
             surfaceScene.add(surfaceWaterMesh);
         } else if (type === 11) {
-            const lakeGeo = new THREE.PlaneGeometry(2600, 2600);
+            const lakeGeo = new THREE.PlaneGeometry(TERRAIN_SIZE, TERRAIN_SIZE);
             lakeGeo.rotateX(-Math.PI / 2);
             const lakeMat = new THREE.MeshLambertMaterial({ color: 0x05101a, transparent: true, opacity: 0.85 });
             const methaneLake = new THREE.Mesh(lakeGeo, lakeMat);
@@ -1740,25 +2841,79 @@
 
         createSurfaceProps(planetData, brightness);
         spawnPlanetLandmark(planetData);
+        spawnPlanetRelic(planetData);
+    }
+
+    function spawnPlanetRelic(planetData) {
+        currentRelicObj = null;
+        currentRelicMesh = null;
+        prevRelicDist = null;
+
+        const relicDef = RELIC_REGISTRY[planetData.name];
+        const beaconHud = document.getElementById('beacon-hud');
+
+        if (!relicDef || collectedRelics.has(planetData.name)) {
+            if (currentLandmark) {
+                document.getElementById('beacon-target').innerText = currentLandmark.name.toUpperCase();
+                beaconHud.style.display = 'block';
+            } else {
+                beaconHud.style.display = 'none';
+            }
+            return;
+        }
+
+        const rx = relicDef.x;
+        const rz = relicDef.z;
+        const ry = getSafeFloorHeight(rx, rz, planetData);
+        currentRelicObj = { planetName: planetData.name, name: relicDef.name, x: rx, y: ry, z: rz };
+
+        document.getElementById('beacon-target').innerText = `RELIC: ${relicDef.name.toUpperCase()}`;
+        beaconHud.style.display = 'block';
+
+        const rGroup = new THREE.Group();
+        rGroup.position.set(rx, ry + 2.4, rz);
+
+        const coreGeo = new THREE.OctahedronGeometry(1.15, 0);
+        const coreMat = new THREE.MeshBasicMaterial({ color: relicDef.color });
+        const coreMesh = new THREE.Mesh(coreGeo, coreMat);
+        rGroup.add(coreMesh);
+
+        const ringGeo = new THREE.TorusGeometry(1.9, 0.12, 8, 24);
+        const ringMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
+        const haloRing = new THREE.Mesh(ringGeo, ringMat);
+        rGroup.add(haloRing);
+
+        const beamGeo = new THREE.CylinderGeometry(0.18, 0.65, 160, 8, 1, true);
+        const beamMat = new THREE.MeshBasicMaterial({
+            color: relicDef.color,
+            transparent: true,
+            opacity: 0.35,
+            side: THREE.DoubleSide,
+            blending: THREE.AdditiveBlending,
+            depthWrite: false
+        });
+        const beam = new THREE.Mesh(beamGeo, beamMat);
+        beam.position.y = 80;
+        rGroup.add(beam);
+
+        const relicLight = new THREE.PointLight(relicDef.color, 3.2, 75);
+        rGroup.add(relicLight);
+
+        rGroup.userData = { core: coreMesh, ring: haloRing, baseY: ry + 2.4 };
+        surfaceScene.add(rGroup);
+        currentRelicMesh = rGroup;
     }
 
     function spawnPlanetLandmark(planetData) {
         currentLandmark = null;
         landmarkDiscovered = false;
         const info = LANDMARK_REGISTRY[planetData.name];
-        if (!info) {
-            document.getElementById('beacon-hud').style.display = 'none';
-            return;
-        }
+        if (!info) return;
 
         const lx = info.x;
         const lz = info.z;
-        const ly = getTerrainHeight(lx, lz, planetData);
+        const ly = getSafeFloorHeight(lx, lz, planetData);
         currentLandmark = { name: info.name, x: lx, y: ly, z: lz, desc: info.desc };
-
-        const beaconHud = document.getElementById('beacon-hud');
-        document.getElementById('beacon-target').innerText = info.name.toUpperCase();
-        beaconHud.style.display = 'block';
 
         const lmGroup = new THREE.Group();
         lmGroup.position.set(lx, ly, lz);
@@ -1851,7 +3006,7 @@
             for (let i = 0; i < count; i++) {
                 const tx = (Math.random() - 0.5) * 2000;
                 const tz = (Math.random() - 0.5) * 2000;
-                const h = getTerrainHeight(tx, tz, planetData);
+                const h = getSafeFloorHeight(tx, tz, planetData);
                 if (h > 2.0 && h < 24) {
                     const group = new THREE.Group();
                     const trunk = new THREE.Mesh(trunkGeo, trunkMat); trunk.position.y = 1.5;
@@ -1868,7 +3023,7 @@
             for (let i = 0; i < count; i++) {
                 const tx = (Math.random() - 0.5) * 2000;
                 const tz = (Math.random() - 0.5) * 2000;
-                const h = getTerrainHeight(tx, tz, planetData);
+                const h = getSafeFloorHeight(tx, tz, planetData);
                 const rock = new THREE.Mesh(rockGeo, rockMat);
                 rock.position.set(tx, h + 1, tz);
                 rock.scale.set(2 + Math.random() * 6, 2 + Math.random() * 10, 2 + Math.random() * 6);
@@ -1881,7 +3036,7 @@
             for (let i = 0; i < 70; i++) {
                 const tx = (Math.random() - 0.5) * 2000;
                 const tz = (Math.random() - 0.5) * 2000;
-                const h = getTerrainHeight(tx, tz, planetData);
+                const h = getSafeFloorHeight(tx, tz, planetData);
                 const col = new THREE.Mesh(colGeo, colMat);
                 col.position.set(tx, h + 4, tz);
                 col.scale.setScalar(1.5 + Math.random() * 2);
@@ -1893,7 +3048,7 @@
             for (let i = 0; i < count; i++) {
                 const tx = (Math.random() - 0.5) * 2000;
                 const tz = (Math.random() - 0.5) * 2000;
-                const h = getTerrainHeight(tx, tz, planetData);
+                const h = getSafeFloorHeight(tx, tz, planetData);
                 const pebble = new THREE.Mesh(pebbleGeo, pebbleMat);
                 pebble.position.set(tx, h + 0.5, tz);
                 pebble.scale.set(1.5 + Math.random() * 3, 0.8 + Math.random() * 1.5, 1.5 + Math.random() * 3);
@@ -1938,45 +3093,116 @@
     function getTerrainHeight(x, z, planetData) {
         let y = 0;
         const type = planetData.type;
+        const seed = planetData.seed || 0;
+        const sx = x + Math.sin(seed * 1.7) * 420;
+        const sz = z + Math.cos(seed * 2.3) * 420;
+
         if (type === 1) {
-            y += Math.sin(x * 0.012) * Math.cos(z * 0.012) * 22;
-            y += Math.sin(x * 0.045 + z * 0.02) * 9;
-            const mountainRidge = Math.abs(Math.sin(x * 0.006 + z * 0.004)) * 38;
+            y += Math.sin(sx * 0.012) * Math.cos(sz * 0.012) * 22;
+            y += Math.sin(sx * 0.045 + sz * 0.02) * 9;
+            const mountainRidge = Math.abs(Math.sin(sx * 0.006 + sz * 0.004)) * 38;
             y += mountainRidge;
             if (y < -4.0) y = -4.0;
         } else if (type === 2) {
-            y += Math.sin(x * 0.018 + z * 0.01) * 8;
-            y += Math.abs(Math.sin(x * 0.04) * Math.cos(z * 0.04) * 24);
+            y += Math.sin(sx * 0.018 + sz * 0.01) * 8;
+            y += Math.abs(Math.sin(sx * 0.04) * Math.cos(sz * 0.04) * 24);
             if (Math.abs(z) < 220) y -= 35;
         } else if (type === 3 || type === 8 || type === 9 || type === 10) {
-            y += Math.sin(x * 0.015) * 18 + Math.cos(z * 0.02) * 18;
+            y += Math.sin(sx * 0.015) * 18 + Math.cos(sz * 0.02) * 18;
         } else if (type === 4 || type === 13) {
-            const crater = Math.sin(x * 0.04) * Math.cos(z * 0.04);
-            y += (crater > 0.72) ? -(crater - 0.72) * 70 : Math.sin(x * 0.01) * Math.cos(z * 0.01) * 6;
+            const crater = Math.sin(sx * 0.04) * Math.cos(sz * 0.04);
+            y += (crater > 0.72) ? -(crater - 0.72) * 70 : Math.sin(sx * 0.01) * Math.cos(sz * 0.01) * 6;
             if (Math.abs(x) < 40 && Math.abs(z) < 40) y += 18;
         } else if (type === 5) {
-            y += Math.sin(x * 0.02) * 14 + Math.cos(z * 0.02) * 14;
+            y += Math.sin(sx * 0.02) * 14 + Math.cos(sz * 0.02) * 14;
         } else if (type === 6) {
-            y += Math.abs(Math.sin(x * 0.035 + z * 0.012) * 30);
+            y += Math.abs(Math.sin(sx * 0.035 + sz * 0.012) * 30);
         } else if (type === 7) {
-            y += Math.sin(x * 0.015) * Math.cos(z * 0.015) * 20;
+            y += Math.sin(sx * 0.015) * Math.cos(sz * 0.015) * 20;
             if (Math.abs(x) < 180 && Math.abs(z) < 180) y -= 16;
         } else if (type === 11) {
-            y += Math.sin(x * 0.02) * 14 + Math.cos(z * 0.012) * 12;
+            y += Math.sin(sx * 0.02) * 14 + Math.cos(sz * 0.012) * 12;
         } else if (type === 12) {
-            y += (Math.abs(x) < 300) ? 0.0 : Math.abs(Math.sin(x * 0.02 + z * 0.015) * 35);
+            y += (Math.abs(x) < 300) ? 0.0 : Math.abs(Math.sin(sx * 0.02 + sz * 0.015) * 35);
         }
         return y;
     }
 
-    function generateGlowTexture() {
+    // Exact barycentric interpolation across the rendered PlaneGeometry triangles
+    function sampleExactTriangleHeight(x, z, planetData) {
+        if (!terrainHeightGrid) {
+            return getTerrainHeight(x, z, planetData);
+        }
+        const halfSize = TERRAIN_SIZE * 0.5;
+        const cellSize = TERRAIN_SIZE / TERRAIN_SEGS;
+
+        const clampedX = Math.max(-halfSize, Math.min(halfSize - 0.001, x));
+        const clampedZ = Math.max(-halfSize, Math.min(halfSize - 0.001, z));
+
+        const gx = (clampedX + halfSize) / cellSize;
+        const gz = (clampedZ + halfSize) / cellSize;
+
+        const ix = Math.min(TERRAIN_SEGS - 1, Math.max(0, Math.floor(gx)));
+        const iz = Math.min(TERRAIN_SEGS - 1, Math.max(0, Math.floor(gz)));
+
+        const fx = gx - ix;
+        const fz = gz - iz;
+
+        const stride = terrainVertsPerSide;
+        const h00 = terrainHeightGrid[iz * stride + ix];
+        const h10 = terrainHeightGrid[iz * stride + (ix + 1)];
+        const h01 = terrainHeightGrid[(iz + 1) * stride + ix];
+        const h11 = terrainHeightGrid[(iz + 1) * stride + (ix + 1)];
+
+        // Three.js PlaneGeometry splits each quad along diagonal (0,1) -> (1,0)
+        if (fx + fz <= 1.0) {
+            return h00 + fx * (h10 - h00) + fz * (h01 - h00);
+        } else {
+            return h11 + (1.0 - fx) * (h01 - h11) + (1.0 - fz) * (h10 - h11);
+        }
+    }
+
+    // Multi-point perimeter clearance preventing camera near-plane clipping on steep hills
+    function getSafeFloorHeight(x, z, planetData) {
+        const centerH = sampleExactTriangleHeight(x, z, planetData);
+        const r = walker.radius;
+        const d = r * 0.7071;
+
+        let maxH = centerH;
+        const s1 = sampleExactTriangleHeight(x + r, z, planetData);
+        const s2 = sampleExactTriangleHeight(x - r, z, planetData);
+        const s3 = sampleExactTriangleHeight(x, z + r, planetData);
+        const s4 = sampleExactTriangleHeight(x, z - r, planetData);
+        const s5 = sampleExactTriangleHeight(x + d, z + d, planetData);
+        const s6 = sampleExactTriangleHeight(x - d, z + d, planetData);
+        const s7 = sampleExactTriangleHeight(x + d, z - d, planetData);
+        const s8 = sampleExactTriangleHeight(x - d, z - d, planetData);
+
+        if (s1 > maxH) maxH = s1;
+        if (s2 > maxH) maxH = s2;
+        if (s3 > maxH) maxH = s3;
+        if (s4 > maxH) maxH = s4;
+        if (s5 > maxH) maxH = s5;
+        if (s6 > maxH) maxH = s6;
+        if (s7 > maxH) maxH = s7;
+        if (s8 > maxH) maxH = s8;
+
+        return maxH;
+    }
+
+    function generateGlowTexture(innerHex = 0xffe696, outerHex = 0xff8c14) {
         const canvas = document.createElement('canvas');
         canvas.width = 64; canvas.height = 64;
         const ctx = canvas.getContext('2d');
+        const cIn = new THREE.Color(innerHex);
+        const cOut = new THREE.Color(outerHex);
+        const r1 = Math.round(cIn.r * 255), g1 = Math.round(cIn.g * 255), b1 = Math.round(cIn.b * 255);
+        const r2 = Math.round(cOut.r * 255), g2 = Math.round(cOut.g * 255), b2 = Math.round(cOut.b * 255);
+
         const grad = ctx.createRadialGradient(32, 32, 0, 32, 32, 32);
-        grad.addColorStop(0, 'rgba(255, 230, 150, 1)');
-        grad.addColorStop(0.3, 'rgba(255, 140, 20, 0.6)');
-        grad.addColorStop(0.8, 'rgba(255, 60, 0, 0.15)');
+        grad.addColorStop(0, `rgba(${r1}, ${g1}, ${b1}, 1)`);
+        grad.addColorStop(0.3, `rgba(${r2}, ${g2}, ${b2}, 0.65)`);
+        grad.addColorStop(0.8, `rgba(${Math.round(r2 * 0.6)}, ${Math.round(g2 * 0.4)}, ${Math.round(b2 * 0.3)}, 0.16)`);
         grad.addColorStop(1, 'rgba(0, 0, 0, 0)');
         ctx.fillStyle = grad;
         ctx.fillRect(0, 0, 64, 64);
@@ -1985,11 +3211,13 @@
 
     // --- NAVIGATION & AUTOPILOT ---
     function cycleTarget() {
+        if (planets.length === 0) return;
         targetIndex = (targetIndex + 1) % planets.length;
         const target = planets[targetIndex];
         let label = target.data.name.toUpperCase();
         if (target.isMoon) label += " (MOON)";
-        else if (target.data.isDwarf) label += " (DWARF PLANET)";
+        else if (target.data.isDwarf) label += " (DWARF)";
+        if (collectedRelics.has(target.data.name)) label += " [✓]";
         log(`RADAR LOCK: ${label}`);
         document.getElementById('tgt-disp').innerText = label;
         document.getElementById('btn-jump').style.display = 'flex';
@@ -2032,7 +3260,12 @@
         sciencePanelOpen = !sciencePanelOpen;
         document.getElementById('science-panel').style.display = sciencePanelOpen ? 'block' : 'none';
         if (sciencePanelOpen) {
-            const currentName = (gameState === 'SURFACE' && currentPlanet) ? currentPlanet.data.name : ((targetIndex >= 0) ? planets[targetIndex].data.name : "EARTH");
+            updateRelicHUD();
+            let currentName = "EARTH";
+            if (gameState === 'GALACTIC_CORE') currentName = "SAGITTARIUS A*";
+            else if (gameState === 'SURFACE' && currentPlanet) currentName = currentPlanet.data.name;
+            else if (targetIndex >= 0 && planets[targetIndex]) currentName = planets[targetIndex].data.name;
+            else if (planets[0]) currentName = planets[0].data.name;
             updateSciencePanel(currentName);
         }
     }
@@ -2052,7 +3285,8 @@
     function getDistanceToSurface(pos) {
         let minAlt = Infinity;
         let nearest = null;
-        if (pos.length() < 5500) return { alt: pos.length() - 4200, name: "SOLAR PROXIMITY", obj: null };
+        const sunRadius = (starMesh && starMesh.geometry && starMesh.geometry.parameters) ? starMesh.geometry.parameters.radius : 4200;
+        if (pos.length() < sunRadius + 1400) return { alt: pos.length() - sunRadius, name: "SOLAR PROXIMITY", obj: null };
 
         for (let i = 0; i < planets.length; i++) {
             const p = planets[i];
@@ -2103,8 +3337,11 @@
 
                 camYaw = 0;
                 camPitch = 0;
-                surfaceCamera.position.set(0, 40, 0);
-                surfaceCamera.rotation.set(0, 0, 0);
+                const spawnH = getSafeFloorHeight(0, 0, currentPlanet.data);
+                surfaceCamera.position.set(0, spawnH + walker.height, 0);
+                _EULER.set(0, 0, 0, 'YXZ');
+                surfaceCamera.quaternion.setFromEuler(_EULER);
+                updateHorizonReadout(0);
 
                 gameState = 'SURFACE';
                 transOverlay.style.opacity = '0';
@@ -2113,6 +3350,7 @@
                 document.getElementById('btn-jump').style.display = 'none';
                 document.getElementById('btn-target').style.display = 'none';
                 document.getElementById('btn-boost').style.display = 'none';
+                document.getElementById('btn-singularity').style.display = 'none';
                 document.getElementById('btn-launch').style.display = 'flex';
                 document.getElementById('env-disp').innerText = "SURFACE EXPLORATION";
                 document.getElementById('lux-disp').innerText = "HEADLAMP ACTIVE (100%)";
@@ -2147,12 +3385,14 @@
                 }
                 disposeHierarchy(surfaceScene);
                 surfaceScene = null;
+                terrainHeightGrid = null;
             }
 
             currentPlanet.mesh.getWorldPosition(_TARGET_WORLD_POS);
             const exitDist = currentPlanet.data.r * 2.8;
             camera.position.copy(_TARGET_WORLD_POS).add(_V1.set(exitDist, exitDist * 0.5, exitDist));
             camera.lookAt(_TARGET_WORLD_POS);
+            syncShipAnglesFromCamera(camera);
 
             transOverlay.style.opacity = 0;
 
@@ -2169,12 +3409,13 @@
     // --- GAME LOOP & PHYSICS ---
     function updateShip(dt) {
         if (autopilot.active) {
-            if (input.forward !== 0 || input.right !== 0 || input.lookX !== 0 || input.lookY !== 0) {
+            if (input.forward !== 0 || input.right !== 0 || input.lookX !== 0 || input.lookY !== 0 || input.keyLookX !== 0 || input.keyLookY !== 0) {
                 autopilot.active = false;
                 camera.fov = 60;
                 camera.updateProjectionMatrix();
                 ship.speed = 0;
                 sound.updateRumble(0, false);
+                syncShipAnglesFromCamera(camera);
                 log("MANUAL OVERRIDE: WARP TERMINATED");
                 return;
             }
@@ -2192,6 +3433,7 @@
             _DUMMY_OBJ.position.copy(camera.position);
             _DUMMY_OBJ.lookAt(_TARGET_WORLD_POS);
             camera.quaternion.slerp(_DUMMY_OBJ.quaternion, 0.12);
+            syncShipAnglesFromCamera(camera);
 
             camera.fov = (t < 0.5) ? 60 + (smoothT * 85) : 145 - ((smoothT - 0.5) * 2.0 * 85);
             camera.updateProjectionMatrix();
@@ -2205,24 +3447,41 @@
                 ship.speed = 0;
                 sound.updateRumble(0, false);
                 camera.lookAt(_TARGET_WORLD_POS);
+                syncShipAnglesFromCamera(camera);
                 log("WARP DESTINATION ARRIVAL.");
             }
             return;
         }
 
-        camera.rotateY(input.lookX);
-        camera.rotateX(input.lookY);
+        // Roll-locked horizon camera orientation
+        shipYaw += input.lookX + input.keyLookX * dt * 1.6;
+        shipPitch += input.lookY + input.keyLookY * dt * 1.3;
         input.lookX = 0;
         input.lookY = 0;
 
-        const navData = getDistanceToSurface(camera.position);
-        let speedFactor = Math.min(1.0, Math.max(0.001, navData.alt / 12000));
-        if (input.warp) speedFactor = 1.0;
+        if (levelTargetActive) {
+            shipPitch += (0 - shipPitch) * Math.min(1, dt * 8.0);
+            if (Math.abs(shipPitch) < 0.005) {
+                shipPitch = 0;
+                levelTargetActive = false;
+            }
+        }
 
-        const targetMaxSpeed = input.warp ? ship.warpSpeed : (ship.baseSpeed + (6000 * speedFactor));
+        shipPitch = Math.max(-Math.PI * 0.47, Math.min(Math.PI * 0.47, shipPitch));
+        _EULER.set(shipPitch, shipYaw, 0, 'YXZ');
+        camera.quaternion.setFromEuler(_EULER);
+        updateHorizonReadout(shipPitch);
+
+        // Calibrated 2.75x thruster boost over normal cruise speed
+        const navData = getDistanceToSurface(camera.position);
+        const speedFactor = Math.min(1.0, Math.max(0.001, navData.alt / 12000));
+        const normalMaxSpeed = ship.baseSpeed + (6000 * speedFactor);
+        const boostMultiplier = input.warp ? 2.75 : 1.0;
+
+        const targetMaxSpeed = normalMaxSpeed * boostMultiplier;
         ship.currentMaxSpeed += (targetMaxSpeed - ship.currentMaxSpeed) * 0.12;
 
-        const forward = input.warp ? 1.0 : input.forward;
+        const forward = input.warp ? (input.forward < 0 ? -1.0 : 1.0) : input.forward;
         ship.speed += (forward * ship.currentMaxSpeed - ship.speed) * 0.08;
 
         camera.getWorldDirection(_V1);
@@ -2234,17 +3493,19 @@
         }
 
         const distFromSun = camera.position.length();
-        const sunScale = Math.max(6500, Math.min(48000, (AU / Math.max(3000, distFromSun)) * 34000));
+        const baseSunScale = (sunSprite && sunSprite.userData.baseScale) ? sunSprite.userData.baseScale : 34000;
+        const sunScale = Math.max(baseSunScale * 0.2, Math.min(baseSunScale * 1.45, (AU / Math.max(3000, distFromSun)) * baseSunScale));
         if (sunSprite) sunSprite.scale.set(sunScale, sunScale, 1);
 
-        const speedNorm = Math.min(1.0, Math.abs(ship.speed) / 5000);
+        const maxDisplaySpeed = normalMaxSpeed * 2.75;
+        const speedNorm = Math.min(1.0, Math.abs(ship.speed) / maxDisplaySpeed);
         sound.updateRumble(speedNorm, input.warp);
 
-        document.getElementById('sys-name').innerText = navData.name.toUpperCase();
+        document.getElementById('sys-name').innerText = navData.name === "DEEP SPACE" ? currentSystemName : navData.name.toUpperCase();
         document.getElementById('alt-disp').innerText = navData.alt > 15000 ? "OUT OF RANGE" : `${Math.floor(navData.alt)} km`;
         document.getElementById('vel-disp').innerText = Math.floor(ship.speed);
 
-        const pct = Math.min(100, (Math.abs(ship.speed) / ship.warpSpeed) * 100);
+        const pct = Math.min(100, (Math.abs(ship.speed) / maxDisplaySpeed) * 100);
         const fill = document.getElementById('speed-bar-fill');
         fill.style.width = pct + '%';
         fill.style.backgroundColor = input.warp ? '#00e5ff' : '#00ff66';
@@ -2255,19 +3516,115 @@
         } else {
             btnLand.style.display = 'none';
         }
+
+        // Check proximity to Galactic Core Singularity
+        const btnSingularity = document.getElementById('btn-singularity');
+        if (singularityUnlocked && singularityGroup) {
+            const dRift = camera.position.distanceTo(singularityGroup.position);
+            if (dRift < 4500) {
+                btnSingularity.style.display = 'flex';
+                if (dRift < 520) enterGalacticCore();
+            } else {
+                btnSingularity.style.display = 'none';
+            }
+        } else {
+            btnSingularity.style.display = 'none';
+        }
+    }
+
+    function updateGalacticCore(dt) {
+        shipYaw += input.lookX + input.keyLookX * dt * 1.6;
+        shipPitch += input.lookY + input.keyLookY * dt * 1.3;
+        input.lookX = 0;
+        input.lookY = 0;
+
+        if (levelTargetActive) {
+            shipPitch += (0 - shipPitch) * Math.min(1, dt * 8.0);
+            if (Math.abs(shipPitch) < 0.005) {
+                shipPitch = 0;
+                levelTargetActive = false;
+            }
+        }
+
+        shipPitch = Math.max(-Math.PI * 0.47, Math.min(Math.PI * 0.47, shipPitch));
+        _EULER.set(shipPitch, shipYaw, 0, 'YXZ');
+        coreCamera.quaternion.setFromEuler(_EULER);
+        updateHorizonReadout(shipPitch);
+
+        const normalCoreMax = 3200;
+        const targetMax = input.warp ? normalCoreMax * 2.75 : normalCoreMax;
+        ship.currentMaxSpeed += (targetMax - ship.currentMaxSpeed) * 0.12;
+        const forward = input.warp ? (input.forward < 0 ? -1.0 : 1.0) : input.forward;
+        ship.speed += (forward * ship.currentMaxSpeed - ship.speed) * 0.08;
+
+        coreCamera.getWorldDirection(_V1);
+        coreCamera.position.add(_V1.multiplyScalar(ship.speed * dt));
+
+        if (input.right !== 0) {
+            _V2.set(1, 0, 0).applyQuaternion(coreCamera.quaternion);
+            coreCamera.position.add(_V2.multiplyScalar(input.right * ship.currentMaxSpeed * 0.5 * dt));
+        }
+
+        const distBH = coreCamera.position.length();
+
+        // Supermassive Kerr Black Hole Gravity Well & Outer Boundary Tether
+        const SOFT_BOUNDARY = 14500;
+        const HARD_BOUNDARY = 24000;
+        if (distBH > SOFT_BOUNDARY) {
+            const excessRatio = Math.min(1.5, (distBH - SOFT_BOUNDARY) / (HARD_BOUNDARY - SOFT_BOUNDARY));
+            const pullStrength = (2800 + excessRatio * excessRatio * 18000) * dt;
+            _V1.copy(coreCamera.position).normalize();
+            coreCamera.position.addScaledVector(_V1, -pullStrength);
+            if (coreCamera.position.length() > HARD_BOUNDARY) {
+                coreCamera.position.normalize().multiplyScalar(HARD_BOUNDARY);
+            }
+            document.getElementById('env-disp').innerText = "GRAVITY WELL TETHER";
+        } else if (distBH < 6500) {
+            // Relativistic tidal pull & frame-dragging swirl near event horizon
+            const tidalFactor = 1.0 - Math.max(0, (distBH - 1500) / 5000);
+            _V1.copy(coreCamera.position).normalize();
+            coreCamera.position.addScaledVector(_V1, -(1200 + tidalFactor * 4200) * dt);
+            _V2.set(-_V1.z, 0, _V1.x).normalize();
+            coreCamera.position.addScaledVector(_V2, tidalFactor * 1650 * dt);
+            document.getElementById('env-disp').innerText = "RELATIVISTIC FRAME DRAG";
+        } else {
+            document.getElementById('env-disp').innerText = "GALACTIC CORE ORBIT";
+        }
+
+        // Plunging into the core triggers a new singularity jump to a procedural star system
+        if (distBH <= 1850 && !coreTransitionTriggered) {
+            triggerBlackHoleSingularityJump();
+        }
+
+        document.getElementById('alt-disp').innerText = `${Math.max(0, Math.floor(distBH - 1450))} km`;
+        document.getElementById('vel-disp').innerText = Math.floor(ship.speed);
+
+        const pct = Math.min(100, (Math.abs(ship.speed) / (normalCoreMax * 2.75)) * 100);
+        const fill = document.getElementById('speed-bar-fill');
+        fill.style.width = pct + '%';
+        fill.style.backgroundColor = '#ff8833';
     }
 
     function updateSurface(dt) {
         const cam = surfaceCamera;
 
-        camYaw += input.lookX;
-        camPitch += input.lookY;
-        camPitch = Math.max(-Math.PI * 0.48, Math.min(Math.PI * 0.48, camPitch));
+        camYaw += input.lookX + input.keyLookX * dt * 1.6;
+        camPitch += input.lookY + input.keyLookY * dt * 1.3;
         input.lookX = 0;
         input.lookY = 0;
 
+        if (levelTargetActive) {
+            camPitch += (0 - camPitch) * Math.min(1, dt * 8.0);
+            if (Math.abs(camPitch) < 0.005) {
+                camPitch = 0;
+                levelTargetActive = false;
+            }
+        }
+
+        camPitch = Math.max(-Math.PI * 0.47, Math.min(Math.PI * 0.47, camPitch));
         _EULER.set(camPitch, camYaw, 0, 'YXZ');
         cam.quaternion.setFromEuler(_EULER);
+        updateHorizonReadout(camPitch);
 
         _V1.set(0, 0, -1).applyEuler(_EULER);
         _V1.y = 0;
@@ -2278,35 +3635,92 @@
         _V2.normalize();
 
         _V3.copy(_V1).multiplyScalar(input.forward).add(_V2.multiplyScalar(input.right));
-        cam.position.add(_V3.multiplyScalar(walker.speed * dt));
+        if (_V3.lengthSq() > 1.0) _V3.normalize();
+        const moveSpeed = input.warp ? walker.speed * 2.5 : walker.speed;
+        cam.position.add(_V3.multiplyScalar(moveSpeed * dt));
 
-        const h = getTerrainHeight(cam.position.x, cam.position.z, currentPlanet.data);
-        cam.position.y = h + walker.height;
+        // Clamp within terrain bounds
+        const maxBound = TERRAIN_SIZE * 0.485;
+        if (cam.position.x > maxBound) cam.position.x = maxBound;
+        if (cam.position.x < -maxBound) cam.position.x = -maxBound;
+        if (cam.position.z > maxBound) cam.position.z = maxBound;
+        if (cam.position.z < -maxBound) cam.position.z = -maxBound;
 
-        if (currentLandmark) {
-            const dx = currentLandmark.x - cam.position.x;
-            const dz = currentLandmark.z - cam.position.z;
+        // Exact barycentric triangle floor + multi-point clearance preventing clipping
+        const floorY = getSafeFloorHeight(cam.position.x, cam.position.z, currentPlanet.data);
+        const targetEyeY = floorY + walker.height;
+        if (cam.position.y < targetEyeY) {
+            cam.position.y = targetEyeY;
+        } else {
+            cam.position.y += (targetEyeY - cam.position.y) * Math.min(1.0, dt * 22.0);
+            if (cam.position.y < targetEyeY) cam.position.y = targetEyeY;
+        }
+
+        // Relic animation & collection
+        if (currentRelicMesh && currentRelicObj) {
+            const t = clock.getElapsedTime();
+            currentRelicMesh.position.y = currentRelicObj.y + 2.4 + Math.sin(t * 2.5) * 0.45;
+            if (currentRelicMesh.userData.core) {
+                currentRelicMesh.userData.core.rotation.y += dt * 1.8;
+                currentRelicMesh.userData.core.rotation.x += dt * 0.9;
+            }
+            if (currentRelicMesh.userData.ring) {
+                currentRelicMesh.userData.ring.rotation.z -= dt * 2.2;
+                currentRelicMesh.userData.ring.rotation.x = Math.sin(t * 1.4) * 0.6;
+            }
+        }
+
+        // Numeric-only beacon distance tracker (green when closing in, amber when moving away)
+        const activeTarget = currentRelicObj || (!landmarkDiscovered ? currentLandmark : null);
+        if (activeTarget) {
+            const dx = activeTarget.x - cam.position.x;
+            const dz = activeTarget.z - cam.position.z;
             const dist = Math.sqrt(dx * dx + dz * dz);
-            document.getElementById('beacon-dist').innerText = Math.floor(dist);
+            const distEl = document.getElementById('beacon-dist');
+            distEl.innerText = Math.floor(dist);
 
-            const targetAngle = Math.atan2(dx, -dz);
-            let angleDiff = targetAngle - camYaw;
-            while (angleDiff > Math.PI) angleDiff -= Math.PI * 2;
-            while (angleDiff < -Math.PI) angleDiff += Math.PI * 2;
+            if (prevRelicDist !== null) {
+                if (dist < prevRelicDist - 0.02) {
+                    distEl.style.color = '#00ff66';
+                } else if (dist > prevRelicDist + 0.02) {
+                    distEl.style.color = '#ffaa00';
+                }
+            }
+            prevRelicDist = dist;
 
-            const arrowEl = document.getElementById('beacon-arrow');
-            if (Math.abs(angleDiff) < 0.35) arrowEl.innerText = "▲ [AHEAD]";
-            else if (angleDiff > 0) arrowEl.innerText = "► [RIGHT]";
-            else arrowEl.innerText = "◄ [LEFT]";
+            if (currentRelicObj && dist < 8.5) {
+                const collectedName = currentRelicObj.name;
+                const pName = currentRelicObj.planetName;
+                collectedRelics.add(pName);
+                if (currentRelicMesh) {
+                    disposeHierarchy(currentRelicMesh);
+                    currentRelicMesh = null;
+                }
+                currentRelicObj = null;
+                prevRelicDist = null;
+                sound.playChime();
+                updateRelicHUD();
 
-            if (dist < 26.0 && !landmarkDiscovered) {
+                const banner = document.getElementById('discovery-banner');
+                document.getElementById('discovery-title').innerText = `RELIC ACQUIRED: ${collectedName.toUpperCase()}\n(${collectedRelics.size} TOTAL COLLECTED)`;
+                banner.style.display = 'block';
+                log(`★ RELIC RECOVERED: ${collectedName.toUpperCase()} ★`);
+                setTimeout(() => { banner.style.display = 'none'; }, 6000);
+
+                if (currentLandmark && !landmarkDiscovered) {
+                    document.getElementById('beacon-target').innerText = currentLandmark.name.toUpperCase();
+                } else {
+                    document.getElementById('beacon-hud').style.display = 'none';
+                }
+            } else if (!currentRelicObj && currentLandmark && dist < 26.0 && !landmarkDiscovered) {
                 landmarkDiscovered = true;
                 sound.playChime();
                 const banner = document.getElementById('discovery-banner');
                 document.getElementById('discovery-title').innerText = `${currentLandmark.name.toUpperCase()}\n(${currentLandmark.desc})`;
                 banner.style.display = 'block';
-                log(`★ DISCOVERY LOGGED: ${currentLandmark.name.toUpperCase()} ★`);
+                log(`★ LANDMARK LOGGED: ${currentLandmark.name.toUpperCase()} ★`);
                 setTimeout(() => { banner.style.display = 'none'; }, 6000);
+                document.getElementById('beacon-hud').style.display = 'none';
             }
         }
 
@@ -2351,6 +3765,9 @@
             weatherSystem.position.x = cam.position.x;
             weatherSystem.position.z = cam.position.z;
         }
+
+        const walkSpeedNorm = Math.min(1.0, _V3.length() * (input.warp ? 1.0 : 0.4));
+        sound.updateRumble(walkSpeedNorm * 0.35, false);
     }
 
     function animate() {
@@ -2358,11 +3775,68 @@
         const dt = Math.min(clock.getDelta(), 0.1);
         const time = clock.getElapsedTime();
 
-        if (gameState === 'SPACE' || gameState === 'REENTRY' || gameState === 'LANDING') {
-            starMesh.material.uniforms.time.value = time;
+        const targetHeight = RENDER_HEIGHT;
+        const aspect = Math.max(0.1, window.innerWidth / Math.max(1, window.innerHeight));
+        const targetWidth = Math.max(1, Math.floor(targetHeight * aspect));
+        if (renderer.domElement.width !== targetWidth || renderer.domElement.height !== targetHeight) {
+            onResize();
+        }
+
+        if (gameState === 'CUTSCENE') {
+            updateCutscene(dt);
+            if (cutscene.phase === 'CORE_DIVE') {
+                if (innerPhotonRing) {
+                    innerPhotonRing.lookAt(coreCamera.position);
+                    innerPhotonRing.material.uniforms.time.value = time;
+                }
+                if (accretionDiskMesh) {
+                    accretionDiskMesh.material.uniforms.time.value = time;
+                    accretionDiskMesh.rotation.z += 0.85 * dt;
+                }
+                if (blackHoleGroup) blackHoleGroup.rotation.y += 0.35 * dt;
+                renderer.render(coreScene, coreCamera);
+            } else {
+                if (starMesh) starMesh.material.uniforms.time.value = time;
+                if (singularityGroup) {
+                    singularityGroup.lookAt(camera.position);
+                    if (singularityGroup.userData.diskMat) {
+                        singularityGroup.userData.diskMat.uniforms.time.value = time;
+                    }
+                }
+                renderer.render(scene, camera);
+            }
+        } else if (gameState === 'SPACE' || gameState === 'REENTRY' || gameState === 'LANDING') {
+            if (starMesh) starMesh.material.uniforms.time.value = time;
 
             if (asteroidBeltMesh) asteroidBeltMesh.rotation.y += 0.008 * dt;
             if (kuiperBeltMesh) kuiperBeltMesh.rotation.y += 0.002 * dt;
+
+            if (cometGroup) {
+                const cAngle = time * 0.025 + 1.1;
+                const cx = Math.cos(cAngle) * 3.8 * AU + 1.4 * AU;
+                const cz = Math.sin(cAngle) * 2.2 * AU;
+                const cy = Math.sin(cAngle * 2.0) * 8500;
+                cometGroup.position.set(cx, cy, cz);
+                cometGroup.lookAt(_SUN_POS);
+            }
+
+            if (singularityGroup) {
+                singularityGroup.lookAt(camera.position);
+                if (singularityGroup.userData.diskMat) {
+                    singularityGroup.userData.diskMat.uniforms.time.value = time;
+                    singularityGroup.userData.diskMat.uniforms.collapseFactor.value = singularityCollapseScale;
+                }
+                if (singularityCollapsing) {
+                    singularityCollapseScale = Math.max(0.0, singularityCollapseScale - dt * 0.28);
+                    singularityGroup.scale.setScalar(Math.max(0.001, singularityCollapseScale));
+                    if (singularityCollapseScale <= 0.01) {
+                        disposeHierarchy(singularityGroup);
+                        singularityGroup = null;
+                        singularityCollapsing = false;
+                        log("EXIT SINGULARITY FULLY DISSIPATED.");
+                    }
+                }
+            }
 
             for (let i = 0; i < planets.length; i++) {
                 const p = planets[i];
@@ -2370,8 +3844,13 @@
 
                 if (!p.isMoon) {
                     const orbitalFactor = 0.08;
-                    p.group.position.x = Math.cos(time * p.orbitSpeed * orbitalFactor + p.data.dist) * p.data.dist;
-                    p.group.position.z = Math.sin(time * p.orbitSpeed * orbitalFactor + p.data.dist) * p.data.dist;
+                    const theta = time * p.orbitSpeed * orbitalFactor + p.initialAngle;
+                    const ecc = p.data.orbitEcc || 0;
+                    const rOrbit = p.data.dist * (1.0 - ecc * Math.cos(theta));
+                    const incl = p.data.orbitIncl || 0;
+                    p.group.position.x = Math.cos(theta) * rOrbit;
+                    p.group.position.y = Math.sin(theta) * rOrbit * Math.sin(incl);
+                    p.group.position.z = Math.sin(theta) * rOrbit;
                     p.mesh.rotation.y += 0.06 * dt;
 
                     if (p.ringMesh) {
@@ -2386,6 +3865,30 @@
 
             updateShip(dt);
             renderer.render(scene, camera);
+        } else if (gameState === 'GALACTIC_CORE') {
+            if (innerPhotonRing) {
+                innerPhotonRing.lookAt(coreCamera.position);
+                innerPhotonRing.material.uniforms.time.value = time;
+            }
+            if (accretionDiskMesh) {
+                accretionDiskMesh.material.uniforms.time.value = time;
+                accretionDiskMesh.rotation.z += 0.85 * dt;
+            }
+            if (blackHoleGroup) {
+                blackHoleGroup.rotation.y += 0.28 * dt;
+            }
+            if (coreStarField) coreStarField.rotation.y += 0.012 * dt;
+            for (let s = 0; s < coreSStars.length; s++) {
+                const st = coreSStars[s];
+                const ang = time * st.speed + st.phase;
+                st.mesh.position.set(
+                    Math.cos(ang) * st.r,
+                    Math.sin(ang) * st.r * Math.sin(st.incl),
+                    Math.sin(ang) * st.r
+                );
+            }
+            updateGalacticCore(dt);
+            renderer.render(coreScene, coreCamera);
         } else if (gameState === 'SURFACE' || gameState === 'TAKEOFF') {
             if (surfaceSun) surfaceSun.material.uniforms.time.value = time;
             if (surfaceParentPlanet) surfaceParentPlanet.material.uniforms.time.value = time;
@@ -2396,18 +3899,28 @@
     }
 
     function onResize() {
-        const aspect = window.innerWidth / window.innerHeight;
-        camera.aspect = aspect;
-        camera.updateProjectionMatrix();
+        const w = Math.max(1, window.innerWidth);
+        const h = Math.max(1, window.innerHeight);
+        const aspect = w / h;
 
+        if (camera) {
+            camera.aspect = aspect;
+            camera.updateProjectionMatrix();
+        }
         if (surfaceCamera) {
             surfaceCamera.aspect = aspect;
             surfaceCamera.updateProjectionMatrix();
         }
+        if (coreCamera) {
+            coreCamera.aspect = aspect;
+            coreCamera.updateProjectionMatrix();
+        }
 
-        const targetHeight = RENDER_HEIGHT;
-        const targetWidth = Math.floor(targetHeight * aspect);
-        renderer.setSize(targetWidth, targetHeight, false);
+        if (renderer) {
+            const targetHeight = RENDER_HEIGHT;
+            const targetWidth = Math.max(1, Math.floor(targetHeight * aspect));
+            renderer.setSize(targetWidth, targetHeight, false);
+        }
     }
 
     function setupPointerLock() {
@@ -2415,19 +3928,25 @@
         const overlay = document.getElementById('start-overlay');
 
         const requestLock = () => {
-            container.requestPointerLock = container.requestPointerLock || container.mozRequestPointerLock;
-            container.requestPointerLock();
+            try {
+                container.requestPointerLock = container.requestPointerLock || container.mozRequestPointerLock;
+                if (container.requestPointerLock) {
+                    const promise = container.requestPointerLock();
+                    if (promise && typeof promise.catch === 'function') promise.catch(() => {});
+                }
+            } catch (e) {}
         };
 
         overlay.addEventListener('click', () => {
             sound.init();
             requestLock();
             overlay.style.display = 'none';
+            startOpeningCutscene();
         });
 
         container.addEventListener('click', (e) => {
             sound.init();
-            if (e.target.closest('.action-btn') || e.target.closest('.control-zone')) return;
+            if (e.target.closest('.action-btn') || e.target.closest('.control-zone') || e.target.closest('#cutscene-hud')) return;
             requestLock();
         });
 
@@ -2439,17 +3958,64 @@
     }
 
     function setupInputs() {
+        const skipBtn = document.getElementById('btn-skip-cutscene');
+        if (skipBtn) {
+            skipBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                finishOpeningCutscene();
+            });
+        }
+
         document.addEventListener('keydown', (e) => {
+            // Track secret debug code "godmode"
+            if (e.key && e.key.length === 1) {
+                cheatKeyBuffer = (cheatKeyBuffer + e.key.toLowerCase()).slice(-12);
+                if (cheatKeyBuffer.endsWith("godmode")) {
+                    cheatKeyBuffer = "";
+                    activateGodMode();
+                    return;
+                }
+            }
+
+            if (gameState === 'CUTSCENE') {
+                if (e.code === 'Escape' || e.code === 'Space' || e.code === 'Enter') {
+                    e.preventDefault();
+                    finishOpeningCutscene();
+                }
+                return;
+            }
+
             if (gameState === 'SPACE' || gameState === 'REENTRY') {
                 switch (e.code) {
                     case 'KeyW': input.forward = 1; break;
                     case 'KeyS': input.forward = -1; break;
                     case 'KeyA': input.right = -1; break;
                     case 'KeyD': input.right = 1; break;
-                    case 'ShiftLeft': input.warp = true; break;
+                    case 'ArrowUp': input.keyLookY = 1; break;
+                    case 'ArrowDown': input.keyLookY = -1; break;
+                    case 'ArrowLeft': input.keyLookX = 1; break;
+                    case 'ArrowRight': input.keyLookX = -1; break;
+                    case 'KeyR': levelHorizon(); break;
+                    case 'ShiftLeft': case 'ShiftRight': input.warp = true; break;
                     case 'Tab': e.preventDefault(); cycleTarget(); break;
                     case 'KeyF': engageJump(); break;
                     case 'Space': initiateLanding(); break;
+                    case 'KeyT': toggleSciencePanel(); break;
+                    case 'KeyC': toggleCockpit(); break;
+                    case 'KeyM': toggleAudio(); break;
+                }
+            } else if (gameState === 'GALACTIC_CORE') {
+                switch (e.code) {
+                    case 'KeyW': input.forward = 1; break;
+                    case 'KeyS': input.forward = -1; break;
+                    case 'KeyA': input.right = -1; break;
+                    case 'KeyD': input.right = 1; break;
+                    case 'ArrowUp': input.keyLookY = 1; break;
+                    case 'ArrowDown': input.keyLookY = -1; break;
+                    case 'ArrowLeft': input.keyLookX = 1; break;
+                    case 'ArrowRight': input.keyLookX = -1; break;
+                    case 'KeyR': levelHorizon(); break;
+                    case 'ShiftLeft': case 'ShiftRight': input.warp = true; break;
                     case 'KeyT': toggleSciencePanel(); break;
                     case 'KeyC': toggleCockpit(); break;
                     case 'KeyM': toggleAudio(); break;
@@ -2460,6 +4026,12 @@
                     case 'KeyS': input.forward = -1; break;
                     case 'KeyA': input.right = -1; break;
                     case 'KeyD': input.right = 1; break;
+                    case 'ArrowUp': input.keyLookY = 1; break;
+                    case 'ArrowDown': input.keyLookY = -1; break;
+                    case 'ArrowLeft': input.keyLookX = 1; break;
+                    case 'ArrowRight': input.keyLookX = -1; break;
+                    case 'KeyR': levelHorizon(); break;
+                    case 'ShiftLeft': case 'ShiftRight': input.warp = true; break;
                     case 'Space': initiateTakeoff(); break;
                     case 'KeyT': toggleSciencePanel(); break;
                     case 'KeyC': toggleCockpit(); break;
@@ -2472,12 +4044,22 @@
             switch (e.code) {
                 case 'KeyW': case 'KeyS': input.forward = 0; break;
                 case 'KeyA': case 'KeyD': input.right = 0; break;
-                case 'ShiftLeft': input.warp = false; break;
+                case 'ArrowUp': case 'ArrowDown': input.keyLookY = 0; break;
+                case 'ArrowLeft': case 'ArrowRight': input.keyLookX = 0; break;
+                case 'ShiftLeft': case 'ShiftRight': input.warp = false; break;
             }
         });
 
+        const container = document.getElementById('game-container');
+        container.addEventListener('mousedown', (e) => {
+            if (!e.target.closest('.action-btn') && !e.target.closest('.control-zone') && !e.target.closest('#cutscene-hud')) {
+                mouseDragging = true;
+            }
+        });
+        window.addEventListener('mouseup', () => { mouseDragging = false; });
+
         document.addEventListener('mousemove', (e) => {
-            if (document.pointerLockElement === document.getElementById('game-container')) {
+            if (document.pointerLockElement === container || mouseDragging) {
                 input.lookX -= e.movementX * 0.0022;
                 input.lookY -= e.movementY * 0.0022;
             }
@@ -2521,23 +4103,23 @@
             input.forward = -(dy / max);
         }
 
-        const container = document.getElementById('game-container');
         container.addEventListener('touchstart', (e) => {
             sound.init();
             for (let i = 0; i < e.changedTouches.length; i++) {
-                if (e.changedTouches[i].clientX > window.innerWidth / 2) {
-                    touchLookActive = true;
-                    lastTouchX = e.changedTouches[i].clientX;
-                    lastTouchY = e.changedTouches[i].clientY;
+                const t = e.changedTouches[i];
+                if (t.clientX > window.innerWidth * 0.42 && lookTouchId === null) {
+                    lookTouchId = t.identifier;
+                    lastTouchX = t.clientX;
+                    lastTouchY = t.clientY;
                 }
             }
         });
 
         container.addEventListener('touchmove', (e) => {
-            if (touchLookActive) {
+            if (lookTouchId !== null) {
                 for (let i = 0; i < e.changedTouches.length; i++) {
                     const t = e.changedTouches[i];
-                    if (t.clientX > window.innerWidth / 2) {
+                    if (t.identifier === lookTouchId) {
                         input.lookX += (t.clientX - lastTouchX) * -0.005;
                         input.lookY += (t.clientY - lastTouchY) * -0.005;
                         lastTouchX = t.clientX;
@@ -2547,12 +4129,30 @@
             }
         });
 
-        container.addEventListener('touchend', () => { touchLookActive = false; });
+        const clearLookTouch = (e) => {
+            for (let i = 0; i < e.changedTouches.length; i++) {
+                if (e.changedTouches[i].identifier === lookTouchId) lookTouchId = null;
+            }
+        };
+        container.addEventListener('touchend', clearLookTouch);
+        container.addEventListener('touchcancel', clearLookTouch);
 
         const bind = (id, action) => {
             const b = document.getElementById(id);
+            if (!b) return;
+            b.addEventListener('click', (e) => {
+                e.stopPropagation();
+                sound.init();
+                action();
+                if (id === 'btn-boost') {
+                    input.warp = !input.warp;
+                    b.style.background = input.warp ? '#00ff66' : 'rgba(0, 40, 20, 0.85)';
+                    b.style.color = input.warp ? '#000' : '#00ff66';
+                }
+            });
             b.addEventListener('touchstart', (e) => {
                 e.preventDefault();
+                e.stopPropagation();
                 sound.init();
                 action();
                 b.style.background = '#00ff66';
@@ -2560,6 +4160,7 @@
             });
             b.addEventListener('touchend', (e) => {
                 e.preventDefault();
+                e.stopPropagation();
                 if (id === 'btn-boost') input.warp = false;
                 b.style.background = 'rgba(0, 40, 20, 0.85)';
                 b.style.color = '#00ff66';
@@ -2571,12 +4172,16 @@
         bind('btn-jump', engageJump);
         bind('btn-land', initiateLanding);
         bind('btn-launch', initiateTakeoff);
+        bind('btn-singularity', enterGalacticCore);
+        bind('btn-level', levelHorizon);
         bind('btn-science', toggleSciencePanel);
         bind('btn-cockpit', toggleCockpit);
         bind('btn-sound', toggleAudio);
     }
 
-    init();
+    window.onload = function () {
+        init();
+    };
 </script>
     <script src="/unlock.js"></script>
 </body>
