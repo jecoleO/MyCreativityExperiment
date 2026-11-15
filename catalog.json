@@ -48,5 +48,15 @@
     "description": "Foundational Joyo kanji, vocabulary, grammar, and reading practice drills.",
     "path": "/content/language-study/japanese/joyo-kanji/joyo_5_Day_2_offline.html",
     "access": "free"
+},
+  {
+    "slug": "day-3",
+    "title": "Joyo Kanji Course: Day 3 - N5 Kanji 11-15",
+    "section": "Language Study",
+    "language": "Japanese",
+    "subsection": "Joyo Kanji Course",
+    "description": "Foundational Joyo kanji, vocabulary, grammar, and reading practice drills.",
+    "path": "/content/language-study/japanese/joyo-kanji/joyo_5_Day_3_offline.html",
+    "access": "free"
   }
 ]
